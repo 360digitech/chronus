@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.qihoo.finance.chronus.config.EhCacheConfiguration,\
+com.qihoo.finance.chronus.config.BootstrapConfiguration

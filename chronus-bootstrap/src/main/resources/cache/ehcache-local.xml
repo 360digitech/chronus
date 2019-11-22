@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache updateCheck="false" name="defaultCache">
+    <diskStore path="java.io.tmpdir"/>
+
+    <!-- 默认缓存配置. -->
+    <defaultCache eternal="true" overflowToDisk="true" maxEntriesLocalDisk="1000000" maxElementsInMemory="200000"/>
+
+    <!-- 系统永久缓存 -->
+    <cache name="sysCache" maxEntriesLocalHeap="100" eternal="true"/>
+
+    <!-- 1分钟缓存 -->
+    <cache name="oneMinCache" maxEntriesLocalHeap="10000" timeToIdleSeconds="60" timeToLiveSeconds="60"/>
+
+    <!-- 10分钟缓存 -->
+    <cache name="tenMinCache" maxEntriesLocalHeap="10000" timeToIdleSeconds="600" timeToLiveSeconds="600"/>
+
+    <!-- 1天缓存 -->
+    <cache name="oneDayCache" maxEntriesLocalHeap="10000" timeToIdleSeconds="86400" timeToLiveSeconds="86400"/>
+
+    <!-- 1周缓存 maxEntriesLocalHeap="0"表示大小无限制 -->
+    <cache name="oneWeekCache" maxEntriesLocalHeap="0" timeToIdleSeconds="604800" timeToLiveSeconds="604800"/>
+
+</ehcache>

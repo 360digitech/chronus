@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.qihoo.finance.chronus.master.config.MasterConfiguration
