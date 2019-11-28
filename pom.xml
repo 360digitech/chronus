@@ -46,6 +46,7 @@
         <commons-collections4.version>4.4</commons-collections4.version>
         <commons-fileupload.version>1.3.3</commons-fileupload.version>
         <guava.version>27.1-jre</guava.version>
+        <reflections.version>0.9.11</reflections.version>
         <log4j2.version>2.11.2</log4j2.version>
         <slf4j.version>1.7.26</slf4j.version>
         <ehcache.version>2.10.6</ehcache.version>
@@ -151,6 +152,11 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.reflections</groupId>
+                <artifactId>reflections</artifactId>
+                <version>${reflections.version}</version>
             </dependency>
 
             <dependency>
