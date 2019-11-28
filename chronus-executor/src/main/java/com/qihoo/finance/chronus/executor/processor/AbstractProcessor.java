@@ -125,7 +125,6 @@ public abstract class AbstractProcessor<T> implements ScheduleProcessor {
                 this.taskList.addAll(tmpList);
             }
             return this.taskList.size();
-        } catch (InterruptedException ex1) {
         } catch (Throwable ex2) {
             log.error("Get tasks error.", ex2);
         }

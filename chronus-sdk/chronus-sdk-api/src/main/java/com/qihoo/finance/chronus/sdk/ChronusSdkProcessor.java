@@ -34,7 +34,7 @@ public interface ChronusSdkProcessor<T> {
      */
     boolean execute(JobConfig jobConfig, List<TaskItemDefineDomain> taskItemList, int eachFetchDataNum) throws Exception;
 
-    boolean executeBatch(JobConfig jobConfig, T[] item);
+    boolean executeBatch(JobConfig jobConfig, T[] item) throws Exception;
 
     /**
      * 根据条件，查询当前调度服务器可处理的任务

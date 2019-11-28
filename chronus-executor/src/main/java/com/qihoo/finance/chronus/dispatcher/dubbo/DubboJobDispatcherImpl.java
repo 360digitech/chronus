@@ -36,10 +36,9 @@ public class DubboJobDispatcherImpl extends AbstractDubboJobDispatcher implement
      * @param taskItemList     当前调度服务器，分配到的可处理队列
      * @param eachFetchDataNum 每次获取数据的数量
      * @return
-     * @throws Exception
      */
     @Override
-    public List selectTasks(String taskParameter, List taskItemList, int eachFetchDataNum) throws Exception {
+    public List selectTasks(String taskParameter, List taskItemList, int eachFetchDataNum) {
         StopWatch clock = getStopWatchAndStart();
         boolean resultFlag = true;
 
@@ -65,7 +64,7 @@ public class DubboJobDispatcherImpl extends AbstractDubboJobDispatcher implement
     }
 
     @Override
-    public boolean execute(Object item) throws Exception {
+    public boolean execute(Object item) {
         StopWatch clock = getStopWatchAndStart();
         getLogger().info("DUBBO JOB 开始处理execute，taskParameter:{} 执行项：{}， 当前时间：{}", jobConfig.getTaskParameter(), item, LocalDateTime.now());
         boolean resultFlag;
@@ -81,7 +80,7 @@ public class DubboJobDispatcherImpl extends AbstractDubboJobDispatcher implement
     }
 
     @Override
-    public boolean execute(Object[] taskList) throws Exception {
+    public boolean execute(Object[] taskList) {
         StopWatch clock = getStopWatchAndStart();
         getLogger().info("DUBBO JOB 开始处理executeBatch，taskParameter:{} 执行项：{}， 当前时间：{}", jobConfig.getTaskParameter(), taskList, LocalDateTime.now());
         boolean resultFlag;
@@ -103,10 +102,9 @@ public class DubboJobDispatcherImpl extends AbstractDubboJobDispatcher implement
      * @param taskItemList     当前调度服务器，分配到的可处理队列
      * @param eachFetchDataNum 每次获取数据的数量
      * @return
-     * @throws Exception
      */
     @Override
-    public boolean execute(String taskParameter, List<TaskItemDefine> taskItemList, int eachFetchDataNum) throws Exception {
+    public boolean execute(String taskParameter, List<TaskItemDefine> taskItemList, int eachFetchDataNum) {
         StopWatch clock = getStopWatchAndStart();
         boolean resultFlag = true;
         List<TaskItemDefineDomain> taskItemDefineDomainList = CollectionUtils.isEmpty(taskItemList) ? null : BeanUtils.copyBeanList(TaskItemDefineDomain.class, taskItemList);

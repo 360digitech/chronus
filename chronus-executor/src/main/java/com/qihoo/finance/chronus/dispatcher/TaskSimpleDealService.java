@@ -18,5 +18,5 @@ public interface TaskSimpleDealService extends TaskDealService {
      * @param
      * @throws Exception
      */
-    boolean execute(String taskParameter, List<TaskItemDefine> taskItemList, int eachFetchDataNum) throws Exception;
+    boolean execute(String taskParameter, List<TaskItemDefine> taskItemList, int eachFetchDataNum);
 }

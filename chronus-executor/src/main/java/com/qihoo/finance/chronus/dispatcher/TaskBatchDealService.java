@@ -12,7 +12,6 @@ public interface TaskBatchDealService<T> extends TaskDealService {
      * 执行批量任务
      *
      * @param task List<T>
-     * @throws Exception
      */
-    boolean execute(T[] task) throws Exception;
+    boolean execute(T[] task);
 }

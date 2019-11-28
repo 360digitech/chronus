@@ -14,5 +14,5 @@ public interface TaskSingleDealService<T> extends TaskDealService {
      * @param task Object
      * @throws Exception
      */
-    boolean execute(T task) throws Exception;
+    boolean execute(T task);
 }

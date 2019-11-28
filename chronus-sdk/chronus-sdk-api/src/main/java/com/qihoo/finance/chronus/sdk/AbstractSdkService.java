@@ -64,7 +64,7 @@ public abstract class AbstractSdkService<T> implements ChronusSdkProcessor<T>, A
     }
 
     @Override
-    public boolean execute(JobConfig jobConfig, List taskItemList, int eachFetchDataNum) {
+    public boolean execute(JobConfig jobConfig, List<TaskItemDefineDomain> taskItemList, int eachFetchDataNum) {
         ChronusSdkSimpleJob sdkSimpleService = simpleServiceMap.get(jobConfig.getBeanName());
         try {
             if (sdkSimpleService != null) {
@@ -91,7 +91,7 @@ public abstract class AbstractSdkService<T> implements ChronusSdkProcessor<T>, A
     }
 
     @Override
-    public List<T> selectTasks(JobConfig jobConfig, List taskItemList, int eachFetchDataNum) throws Exception {
+    public List<T> selectTasks(JobConfig jobConfig, List<TaskItemDefineDomain> taskItemList, int eachFetchDataNum) throws Exception {
         ChronusSdkSelectTaskService clientService = dataFlowServiceMap.get(jobConfig.getBeanName());
         checkJobConfig(jobConfig, clientService);
         try {
