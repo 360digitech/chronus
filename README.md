@@ -31,25 +31,24 @@
 ### Defining spring bean handler
 
 ```java
-@Service("testBean")
-public class TestBean implements JssSdkService<String> {
-    private static final Logger logger = LogManager.getLogger(TestBean.class);
-    
+@Service("selectExecuteBean")
+public class SelectExecuteBean implements ChronusSdkSingleJob<Integer> {
+    private static final Logger logger = LogManager.getLogger(SelectExecuteBean.class);
+
     @Override
-    public List<String> selectTasks(String s, List<TaskItemDefineDomain> list, int i1) throws Exception {
-        List<String> result = new ArrayList<>();
-        result.add("1");
+    public List<Integer> selectTasks(String taskParameter, List<TaskItemDefineDomain> list, int eachFetchDataNum) throws Exception {
+        List<Integer> result = new ArrayList<>();
+        //查询数据集合
         return result;
     }
 
     @Override
-    public boolean execute(String domain, String s) throws Exception {
-        logger.info("开始处理名单导入初始化，当前时间:{}", LocalDateTime.now());
-        System.out.println(domain);
-        logger.info("结束处理名单导入初始化，当前时间:{}", LocalDateTime.now());
+    public boolean execute(Integer domain, String taskParameter) throws Exception {
+        // 处理集合中的每一项
         return true;
     }
 }
+
 ```
 
 ## Document
