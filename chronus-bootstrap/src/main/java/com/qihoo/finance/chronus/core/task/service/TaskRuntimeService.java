@@ -15,7 +15,7 @@ public interface TaskRuntimeService {
 
     void updateTaskRuntimeHeartBeatTime(TaskRuntimeEntity taskRuntimeEntity);
 
-    List<TaskRuntimeEntity> selectTaskRuntimeByTaskName(String cluster, String taskName);
+    List<TaskRuntimeEntity> selectTaskRuntimeByTaskName(String cluster, String taskName,Integer judgeDeadInterval);
 
     void delete(TaskRuntimeEntity taskRuntimeEntity);
 }

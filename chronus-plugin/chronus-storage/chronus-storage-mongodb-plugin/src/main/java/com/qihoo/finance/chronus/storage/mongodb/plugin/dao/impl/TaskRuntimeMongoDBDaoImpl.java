@@ -3,6 +3,7 @@ package com.qihoo.finance.chronus.storage.mongodb.plugin.dao.impl;
 import com.qihoo.finance.chronus.metadata.api.common.TableConstant;
 import com.qihoo.finance.chronus.metadata.api.task.dao.TaskRuntimeDao;
 import com.qihoo.finance.chronus.metadata.api.task.entity.TaskRuntimeEntity;
+import com.qihoo.finance.chronus.metadata.api.task.enums.ScheduleServerStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -10,7 +11,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by xiongpu on 2019/8/10.
@@ -28,16 +29,31 @@ public class TaskRuntimeMongoDBDaoImpl extends AbstractMongoBaseDao<TaskRuntimeE
     }
 
     @Override
-    public void batchInsert(List<TaskRuntimeEntity> taskRuntimeEntityInitList) {
-        super.insert(taskRuntimeEntityInitList);
-    }
-
-    @Override
-    public List<TaskRuntimeEntity> selectTaskRuntimeByTaskName(String cluster, String taskName) {
+    public List<TaskRuntimeEntity> selectTaskRuntimeByTaskName(String cluster, String taskName, Integer judgeDeadInterval) {
         Query query = new Query();
         query.addCriteria(Criteria.where("cluster").is(cluster));
         query.addCriteria(Criteria.where("taskName").is(taskName));
-        return super.selectList(query);
+        Date now = new Date();
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        calendar.setTime(now);
+        calendar.add(Calendar.SECOND, judgeDeadInterval * -5);
+        Date lastHeartBeatTime = calendar.getTime();
+        query.addCriteria(Criteria.where("heartBeatTime").gte(lastHeartBeatTime));
+
+        List<TaskRuntimeEntity> resultList = super.selectList(query);
+        Collections.sort(resultList, Comparator.comparing(TaskRuntimeEntity::getHeartBeatTime));
+
+        calendar.setTime(now);
+        calendar.add(Calendar.SECOND, judgeDeadInterval * -1);
+        lastHeartBeatTime = calendar.getTime();
+        for (TaskRuntimeEntity taskRuntimeEntity : resultList) {
+            if (taskRuntimeEntity.getHeartBeatTime() != null && taskRuntimeEntity.getHeartBeatTime().getTime() < lastHeartBeatTime.getTime()) {
+                taskRuntimeEntity.setState(ScheduleServerStatusEnum.dead.name());
+            } else {
+                break;
+            }
+        }
+        return resultList;
     }
 
     @Override

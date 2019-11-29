@@ -121,7 +121,7 @@ public class TaskController {
     @RequestMapping(value = "/taskRuntime", method = RequestMethod.POST)
     public Response taskRuntime(@RequestBody TaskEntity taskEntity) throws Exception {
         Response response = new Response().success();
-        List<TaskRuntimeEntity> taskRuntimeEntityList = taskRuntimeService.selectTaskRuntimeByTaskName(taskEntity.getCluster(), taskEntity.getTaskName());
+        List<TaskRuntimeEntity> taskRuntimeEntityList = taskRuntimeService.selectTaskRuntimeByTaskName(taskEntity.getCluster(), taskEntity.getTaskName(), taskEntity.getJudgeDeadInterval());
         response.setData(taskRuntimeEntityList);
         return response;
     }

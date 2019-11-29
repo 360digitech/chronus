@@ -35,8 +35,8 @@ public class TaskRuntimeServiceImpl implements TaskRuntimeService {
     }
 
     @Override
-    public List<TaskRuntimeEntity> selectTaskRuntimeByTaskName(String cluster, String taskName) {
-        return taskRuntimeDao.selectTaskRuntimeByTaskName(cluster,taskName);
+    public List<TaskRuntimeEntity> selectTaskRuntimeByTaskName(String cluster, String taskName, Integer judgeDeadInterval) {
+        return taskRuntimeDao.selectTaskRuntimeByTaskName(cluster, taskName, judgeDeadInterval);
     }
 
     @Override
