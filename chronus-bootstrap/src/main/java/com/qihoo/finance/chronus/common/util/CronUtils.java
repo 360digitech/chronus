@@ -12,13 +12,8 @@ import java.util.Date;
 public class CronUtils {
 
     public static Date getNextDateAfterNow(String cronExpression, Date now) {
-        try {
-            CronSequenceGenerator cronSequenceGenerator = new CronSequenceGenerator(cronExpression);
-            Date tmpDate = cronSequenceGenerator.next(now);
-            return tmpDate;
-        } catch (Exception e) {
-            log.error("获取下次执行时间异常", e);
-            throw e;
-        }
+        CronSequenceGenerator cronSequenceGenerator = new CronSequenceGenerator(cronExpression);
+        Date tmpDate = cronSequenceGenerator.next(now);
+        return tmpDate;
     }
 }

@@ -100,7 +100,7 @@ public class TaskHeartBeatServiceImpl implements TaskHeartBeatService, Applicati
     }
 
     @Override
-    public void removeTaskFromHeartBeatQueue(Integer heartBeatRate, TaskRuntimeEntity taskRuntime) {
+    public void removeTaskFromHeartBeatQueue(Integer heartBeatRate, TaskRuntimeEntity taskRuntime, boolean needClearRuntimeInfo) {
         String heartBeatRateStr = heartBeatRate.toString();
         String key = getKey(taskRuntime);
 
@@ -115,7 +115,9 @@ public class TaskHeartBeatServiceImpl implements TaskHeartBeatService, Applicati
             log.info("移除{}/s周期的心跳数据队列!", heartBeatRateStr);
             CONCURRENT_HEARTBEAT_QUEUE_MAP.remove(heartBeatRateStr);
         }
-        taskRuntimeService.delete(taskRuntime);
+        if (needClearRuntimeInfo) {
+            taskRuntimeService.delete(taskRuntime);
+        }
     }
 
     private Runnable sendTaskHeartbeatInfoTask = new AbstractTimerTask(SupportConstants.SUPPORT_NAME_EXECUTOR, SupportConstants.SEND_TASK_RUNTIME_HEARTBEAT) {

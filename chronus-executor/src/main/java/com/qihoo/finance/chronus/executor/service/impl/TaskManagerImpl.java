@@ -120,7 +120,7 @@ public class TaskManagerImpl implements TaskManager {
             this.processor.stopProcessor();
         }
         this.unRegisterDaemonTask(this.taskDaemonThreadService);
-        this.unRegisterHeartBeatTask(this.taskHeartBeatService);
+        this.unRegisterHeartBeatTaskAndClearRuntimeInfo(this.taskHeartBeatService);
         log.info("TaskName:{} SeqNo:{} taskItems:{} 已停止!", this.taskRuntime.getTaskName(), this.taskRuntime.getSeqNo(), this.taskRuntime.getTaskItems());
     }
 
@@ -137,7 +137,12 @@ public class TaskManagerImpl implements TaskManager {
     @Override
     public void unRegisterHeartBeatTask(TaskHeartBeatService taskHeartBeatService) {
         this.taskHeartBeatService = taskHeartBeatService;
-        this.taskHeartBeatService.removeTaskFromHeartBeatQueue(this.taskEntity.getHeartBeatRate(), this.taskRuntime);
+        this.taskHeartBeatService.removeTaskFromHeartBeatQueue(this.taskEntity.getHeartBeatRate(), this.taskRuntime,false);
+    }
+
+    private void unRegisterHeartBeatTaskAndClearRuntimeInfo(TaskHeartBeatService taskHeartBeatService) {
+        this.taskHeartBeatService = taskHeartBeatService;
+        this.taskHeartBeatService.removeTaskFromHeartBeatQueue(this.taskEntity.getHeartBeatRate(), this.taskRuntime,true);
     }
 
     @Override
@@ -145,7 +150,14 @@ public class TaskManagerImpl implements TaskManager {
         this.taskDaemonThreadService = taskDaemonThreadService;
 
         Date now = DateUtils.now();
-        Date firstStartTime = CronUtils.getNextDateAfterNow(taskEntity.getPermitRunStartTime(), now);
+        Date firstStartTime;
+        try {
+            firstStartTime = CronUtils.getNextDateAfterNow(taskEntity.getPermitRunStartTime(), now);
+        } catch (Exception e) {
+            this.taskRuntime.setState(ScheduleServerStatusEnum.error.name());
+            this.taskRuntime.setMessage("解析Corn表达式异常! cornExpression:[" + taskEntity.getPermitRunStartTime() + "]" + e.getMessage());
+            throw e;
+        }
         this.taskRuntime.setNextRunStartTime(firstStartTime);
         this.resumeScheduleTask = new PauseOrResumeScheduleTask(this, taskEntity.getPermitRunStartTime(), taskRuntime, PauseOrResumeScheduleTask.TYPE_RESUME);
         this.taskDaemonThreadService.initSchedule(this.resumeScheduleTask, firstStartTime);
@@ -154,7 +166,7 @@ public class TaskManagerImpl implements TaskManager {
             Date firstEndTime = CronUtils.getNextDateAfterNow(taskEntity.getPermitRunEndTime(), firstStartTime);
             Date nowEndTime = CronUtils.getNextDateAfterNow(taskEntity.getPermitRunEndTime(), now);
 
-            if (nowEndTime != null && !nowEndTime.equals(firstEndTime) && now.before(nowEndTime)) {
+            if (!nowEndTime.equals(firstEndTime) && now.before(nowEndTime)) {
                 firstEndTime = nowEndTime;
             }
             this.pauseScheduleTask = new PauseOrResumeScheduleTask(this, taskEntity.getPermitRunEndTime(), taskRuntime, PauseOrResumeScheduleTask.TYPE_PAUSE);

@@ -13,6 +13,7 @@ public interface TaskManager {
 
     /**
      * 守护线程调用-停止处理
+     *
      * @return
      */
     boolean stopProcessor();
@@ -26,24 +27,29 @@ public interface TaskManager {
 
     /**
      * 注册心跳任务
+     *
      * @param taskHeartBeatService
      */
     void registerHeartBeatTask(TaskHeartBeatService taskHeartBeatService);
 
     /**
      * 取消心跳任务
+     * 不会清理运行信息
+     *
      * @param taskHeartBeatService
      */
     void unRegisterHeartBeatTask(TaskHeartBeatService taskHeartBeatService);
 
     /**
      * 注册守护线程任务
+     *
      * @param taskDaemonThreadService
      */
     void registerDaemonTask(TaskDaemonThreadService taskDaemonThreadService);
 
     /**
      * 取消守护线程任务
+     *
      * @param taskDaemonThreadService
      */
     void unRegisterDaemonTask(TaskDaemonThreadService taskDaemonThreadService);

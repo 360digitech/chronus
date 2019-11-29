@@ -37,6 +37,7 @@ public class TaskCache extends AbstractLocalCacheLoader {
         if (cacheResult == null) {
             // 因为信息一定来自数据库 当没有的时候 直接刷新缓存
             instance.update();
+            cacheResult = instance.get(cluster + taskName);
         }
         return cacheResult;
     }

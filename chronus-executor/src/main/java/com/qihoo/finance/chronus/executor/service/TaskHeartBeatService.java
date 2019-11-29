@@ -7,7 +7,6 @@ import com.qihoo.finance.chronus.metadata.api.task.entity.TaskRuntimeEntity;
  */
 public interface TaskHeartBeatService {
     /**
-     *
      * @param heartBeatRate
      * @param taskRuntime
      */
@@ -15,8 +14,9 @@ public interface TaskHeartBeatService {
 
     /**
      * 从队列移除掉这个任务
+     * 正常停止的任务 可以清理掉运行信息 异常停止的任务 不清理运行信息
      *
      * @param taskRuntime
      */
-    void removeTaskFromHeartBeatQueue(Integer heartBeatRate, TaskRuntimeEntity taskRuntime);
+    void removeTaskFromHeartBeatQueue(Integer heartBeatRate, TaskRuntimeEntity taskRuntime, boolean needClearRuntimeInfo);
 }

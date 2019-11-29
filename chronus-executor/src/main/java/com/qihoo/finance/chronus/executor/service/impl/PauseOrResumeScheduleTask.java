@@ -6,6 +6,7 @@ import com.qihoo.finance.chronus.context.SpringContextHolder;
 import com.qihoo.finance.chronus.executor.service.TaskDaemonThreadService;
 import com.qihoo.finance.chronus.executor.service.TaskManager;
 import com.qihoo.finance.chronus.metadata.api.task.entity.TaskRuntimeEntity;
+import com.qihoo.finance.chronus.metadata.api.task.enums.ScheduleServerStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
@@ -34,8 +35,15 @@ public class PauseOrResumeScheduleTask implements Runnable {
     @Override
     public void run() {
         Date now = DateUtils.now();
+        Date nextTime;
         try {
-            Date nextTime = CronUtils.getNextDateAfterNow(this.cornExpression, now);
+            nextTime = CronUtils.getNextDateAfterNow(this.cornExpression, now);
+        } catch (Exception e) {
+            this.taskRuntime.setState(ScheduleServerStatusEnum.error.name());
+            this.taskRuntime.setMessage("解析Corn表达式异常! this.cornExpression:" + this.cornExpression + " " + e.getMessage());
+            return;
+        }
+        try {
             if (this.type == TYPE_PAUSE) {
                 boolean stopResult = taskManager.stopProcessor();
                 this.taskRuntime.setNextRunEndTime(nextTime);
@@ -51,10 +59,12 @@ public class PauseOrResumeScheduleTask implements Runnable {
                     this.taskRuntime.setMessage("到达开始时间,恢复调度!");
                 }
             }
-            TaskDaemonThreadService taskDaemonThreadService = SpringContextHolder.getBean("taskDaemonThreadService");
-            taskDaemonThreadService.schedule(this, nextTime);
+
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+        } finally {
+            TaskDaemonThreadService taskDaemonThreadService = SpringContextHolder.getBean("taskDaemonThreadService");
+            taskDaemonThreadService.schedule(this, nextTime);
         }
     }
 
