@@ -15,6 +15,7 @@ public class WebConfiguration implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         InterceptorRegistration registration = registry.addInterceptor(new CsrfInterceptor());
+        registration.excludePathPatterns("/api/login");
         registration.addPathPatterns("/api/**");
     }
 

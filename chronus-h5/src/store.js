@@ -8,7 +8,7 @@ const store = new Vuex.Store({
   state: {
     status: '',
     cluster: localStorage.getItem('cluster') || 'default',
-    userName: localStorage.getItem('userName') || ''
+    token: localStorage.getItem('token') || ''
   },
   mutations: {
     cluster_change (state, cluster) {
@@ -17,17 +17,17 @@ const store = new Vuex.Store({
     auth_request (state) {
       state.status = 'loading'
     },
-    auth_success (state, user) {
+    auth_success (state, token) {
       state.status = 'success'
 
-      state.userName = user.name
+      state.token = token
     },
     auth_error (state) {
       state.status = 'error'
     },
     logout (state) {
       state.status = ''
-      state.userName = ''
+      state.token = ''
     }
   },
   actions: {
@@ -42,22 +42,22 @@ const store = new Vuex.Store({
             } else {
               reject(resp.data.msg)
             }
-            localStorage.setItem('userName', user.name)
+            localStorage.setItem('token', resp.data.data)
             // 每次请求接口时，需要在headers添加对应的Token验证
-            // axios.defaults.headers.common['Authorization'] = token
+            axios.defaults.headers.common['Authorization'] = resp.data.data
             // 更新token
-            commit('auth_success', user)
+            commit('auth_success', resp.data.data)
           })
           .catch(err => {
             commit('auth_error')
-            localStorage.removeItem('userName')
+            localStorage.removeItem('token')
             reject(err)
           })
       })
     },
     LogOut ({ commit }) {
       return new Promise(resolve => {
-        localStorage.removeItem('userName')
+        localStorage.removeItem('token')
         commit('logout')
         resolve()
       })
@@ -71,7 +71,7 @@ const store = new Vuex.Store({
   },
   getters: {
     // !!将state.token强制转换为布尔值，若state.token存在且不为空(已登录)则返回true，反之返回false
-    isLoggedIn: state => !!state.userName,
+    isLoggedIn: state => !!state.token,
     authStatus: state => state.status
   }
 })

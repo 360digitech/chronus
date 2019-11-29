@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.UUID;
+
 
 @Controller
 public class LoginController {
@@ -21,13 +24,16 @@ public class LoginController {
      */
     @RequestMapping(value = "/api/login", method = RequestMethod.POST)
     @ResponseBody
-    public Response doLogin(@RequestBody UserEntity user) {
+    public Response doLogin(@RequestBody UserEntity user, HttpServletRequest request) {
         Response response = new Response().success();
         //添加用户认证信息
         Subject subject = SecurityUtils.getSubject();
         UsernamePasswordToken token = new UsernamePasswordToken(user.getName(), user.getPwd());
         try {
             subject.login(token);
+            String authorization = UUID.randomUUID().toString();
+            response.setData(authorization);
+            request.getSession().setAttribute("Authorization",authorization);
         } catch (UnknownAccountException e) {
             response.hinderFail(e.getMessage());
         } catch (Exception e) {

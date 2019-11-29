@@ -17,7 +17,6 @@ router.beforeEach((to, from, next) => {
   // 判断该路由是否需要登录权限
 
   // 通过vuex state获取当前的token是否存在
-  console.log('---->', store.getters.isLoggedIn)
   if (store.getters.isLoggedIn) {
     if (to.path === '/login') {
       next('/')

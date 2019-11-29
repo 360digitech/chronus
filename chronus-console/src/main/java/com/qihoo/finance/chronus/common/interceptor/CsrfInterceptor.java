@@ -13,18 +13,15 @@ import javax.servlet.http.HttpServletResponse;
 @Slf4j
 public class CsrfInterceptor extends HandlerInterceptorAdapter {
 
-    private static final String HEADER_REFERER_KEY = "referer";
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        String referrer = request.getHeader(HEADER_REFERER_KEY);
-        StringBuffer stringBuffer = new StringBuffer();
-        stringBuffer.append(request.getScheme()).append("://").append(request.getServerName());
-        if (StringUtils.isBlank(referrer) || referrer.lastIndexOf(String.valueOf(stringBuffer)) == 0) {
-            return true;
-        } else {
-            log.info("referrer:{},basePath:{}", referrer, stringBuffer);
+        String token = request.getHeader("Authorization");
+        String str = (String)request.getSession().getAttribute("Authorization");
+        if (!StringUtils.equals(token,str)) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
             return false;
         }
+        return true;
     }
 }
