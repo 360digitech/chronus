@@ -1,5 +1,7 @@
 /* eslint-disable */
 import axios from 'axios'
+import store from './store'
+
 const instance = axios.create({
   timeout: 15000,
   headers: {
@@ -10,6 +12,21 @@ const instance = axios.create({
     dataType: 'json'
   }
 })
+
+
+// 添加请求拦截器
+instance.interceptors.request.use(function (config) {
+  let token = localStorage.getItem('token')
+  if (token) {
+    config.headers = {
+      'Authorization': token,
+    }
+  }
+  return config;
+}, function (error) {
+  return Promise.reject(error);
+});
+
 instance.interceptors.response.use(
   response => {
     if (response.data && response.data.flag === "S") {
@@ -20,8 +37,6 @@ instance.interceptors.response.use(
         res.__flag = response.data.flag // 不建议走这个字段
       } else {
         // 可能要用到格式重整合
-
-
       }
       return Promise.resolve(res)
     }
