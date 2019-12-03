@@ -21,11 +21,6 @@
         </dependency>
         <dependency>
             <groupId>com.qihoo.finance.chronus</groupId>
-            <artifactId>chronus-registry-db</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.qihoo.finance.chronus</groupId>
             <artifactId>chronus-registry-zookeeper</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
