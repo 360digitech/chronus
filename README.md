@@ -69,7 +69,7 @@ public class SelectExecuteBean implements ChronusSdkSingleJob<Integer> {
 * Bugs: [Issues](https://github.com/360jinrong/Chronus/issues/new?template=chronus-issue-report-template.md)
 
 ## Who Uses Chronus
-提供您的信息 [谁在使用Chronus #18](https://github.com/360jinrong/chronus/issues/18) 共同改变Chronus
+请在 [谁在使用Chronus #18](https://github.com/360jinrong/chronus/issues/18) 提供您的信息共同改变Chronus
 
 ## License
 
