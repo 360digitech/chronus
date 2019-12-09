@@ -71,6 +71,8 @@ public class SelectExecuteBean implements ChronusSdkSingleJob<Integer> {
 ## Who Uses Chronus
 请在 [谁在使用Chronus #18](https://github.com/360jinrong/chronus/issues/18) 提供您的信息共同改变Chronus
 
+![360金融](doc/userwall/360jinrong.svg)
+
 ## License
 
 [Apache 2.0 license.](/LICENSE) Copyright (C) 360 Finance, Inc.
