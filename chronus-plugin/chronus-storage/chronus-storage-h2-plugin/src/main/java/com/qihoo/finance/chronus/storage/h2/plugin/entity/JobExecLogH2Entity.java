@@ -1,28 +1,35 @@
 package com.qihoo.finance.chronus.storage.h2.plugin.entity;
 
-import com.qihoo.finance.chronus.metadata.api.common.TableConstant;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.data.annotation.Transient;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import java.sql.Timestamp;
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+
+import org.springframework.data.annotation.Transient;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.qihoo.finance.chronus.metadata.api.common.TableConstant;
+
+import lombok.Getter;
+import lombok.Setter;
+
 /**
- * @author jane.zhang
- * @Date 2019/9/22
- * @Description
+ * @author liuronghua
+ * @date 2019年11月20日 下午4:27:19
+ * @version 5.1.0
  */
 @Getter
 @Setter
 @Entity
-@Table(name = TableConstant.JOB_EXEC_LOG)
+@Table(name = TableConstant.JOB_EXEC_LOG_INFO)
 public class JobExecLogH2Entity extends BaseH2Entity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+	private static final long serialVersionUID = 1L;
+
+	@Id
+    private String id;
 
     /**
      * 所属集群
@@ -30,22 +37,26 @@ public class JobExecLogH2Entity extends BaseH2Entity {
     @NotBlank
     @Column(name = "cluster")
     private String cluster;
+    
     /**
      * 所属系统
      */
     @Column(name = "sys_code")
     private String sysCode;
+    
     /**
      * 任务名称
      */
     @Column(name = "task_name")
     private String taskName;
+    
     /**
      * 执行地址
      */
     @NotBlank
     @Column(name = "exec_address")
     private String execAddress;
+    
     /**
      * 流水号
      */
@@ -57,6 +68,7 @@ public class JobExecLogH2Entity extends BaseH2Entity {
 
     @Column(name = "end_date")
     private Date endDate;
+    
     /**
      * 处理总数
      */
@@ -67,11 +79,27 @@ public class JobExecLogH2Entity extends BaseH2Entity {
      */
     @Column(name = "handle_fail_count")
     private Long handleFailCount;
+    
     /**
      * 处理结果
      */
     @Column(name = "handle_detail")
     private String handleDetail;
+    
+    @Column(name = "date_created")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date dateCreated;
+
+    @Column(name = "created_by")
+    private String createdBy = "sys";
+
+    @Column(name = "date_updated")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date dateUpdated;
+
+    @Column(name = "updated_by")
+    private String updatedBy = "sys";
+    
     /**
      * 非db字段
      */
@@ -80,16 +108,4 @@ public class JobExecLogH2Entity extends BaseH2Entity {
 
     @Transient
     private Integer pageNum;
-
-    @Column(name = "date_created")
-    private Timestamp dateCreated;
-
-    @Column(name = "created_by")
-    private String createdBy = "sys";
-
-    @Column(name = "date_updated")
-    private Timestamp dateUpdated;
-
-    @Column(name = "updated_by")
-    private String updatedBy = "sys";
 }

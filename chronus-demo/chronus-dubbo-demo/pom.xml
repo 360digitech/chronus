@@ -13,6 +13,7 @@
 
     <packaging>jar</packaging>
     <properties>
+        <skip_maven_deploy>true</skip_maven_deploy>
         <start_class>com.qihoo.finance.chronus.Application</start_class>
     </properties>
 
@@ -148,7 +149,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.1.8.RELEASE</version>
+                <version>${spring_boot_maven_plugin_version}</version>
                 <executions>
                     <execution>
                         <goals>

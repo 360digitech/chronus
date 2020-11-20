@@ -28,12 +28,6 @@ public class TagEntity extends Entity {
      */
     private String remark;
 
-    /**
-     * 分配的执行机器数量
-     */
-    private Integer executorNum;
-
-
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date dateCreated;
 
@@ -43,7 +37,6 @@ public class TagEntity extends Entity {
     private Date dateUpdated;
 
     private String updatedBy = "sys";
-
 
     @Transient
     private Integer pageSize;

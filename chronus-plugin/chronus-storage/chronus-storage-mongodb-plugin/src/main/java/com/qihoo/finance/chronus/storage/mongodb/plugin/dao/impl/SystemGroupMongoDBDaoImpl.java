@@ -1,7 +1,6 @@
 package com.qihoo.finance.chronus.storage.mongodb.plugin.dao.impl;
 
 import com.qihoo.finance.chronus.metadata.api.common.PageResult;
-import com.qihoo.finance.chronus.metadata.api.common.TableConstant;
 import com.qihoo.finance.chronus.metadata.api.system.dao.SystemGroupDao;
 import com.qihoo.finance.chronus.metadata.api.system.entity.SystemGroupEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +16,8 @@ import java.util.Map;
  */
 public class SystemGroupMongoDBDaoImpl extends AbstractMongoBaseDao<SystemGroupEntity> implements SystemGroupDao {
 
-    public SystemGroupMongoDBDaoImpl(@Autowired MongoTemplate mongoTemplate) {
-        super(mongoTemplate, TableConstant.SYSTEM_GROUP_INFO);
+    public SystemGroupMongoDBDaoImpl(String collectionName, @Autowired MongoTemplate mongoTemplate) {
+        super(mongoTemplate, collectionName);
     }
 
     @Override
@@ -60,7 +59,14 @@ public class SystemGroupMongoDBDaoImpl extends AbstractMongoBaseDao<SystemGroupE
 
     @Override
     public PageResult<SystemGroupEntity> findAllByPage(Integer page, Integer limit, Map<String, String> param) {
-        return super.findAllByPage(page,limit,param);
+        return super.findAllByPage(page, limit, param);
+    }
+
+    @Override
+    public List<SystemGroupEntity> selectSystemByGroupName(List<String> groupNames) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("groupName").in(groupNames));
+        return selectList(query);
     }
 
 }

@@ -2,7 +2,6 @@ package com.qihoo.finance.chronus.storage.mongodb.plugin.dao.impl;
 
 import com.qihoo.finance.chronus.metadata.api.common.PageQueryParams;
 import com.qihoo.finance.chronus.metadata.api.common.PageResult;
-import com.qihoo.finance.chronus.metadata.api.common.TableConstant;
 import com.qihoo.finance.chronus.metadata.api.log.dao.JobExecLogDao;
 import com.qihoo.finance.chronus.metadata.api.log.entity.JobExecLogEntity;
 import org.apache.commons.lang3.StringUtils;
@@ -12,14 +11,17 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Created by xiongpu on 2019/7/29.
  */
 public class JobExecLogMongoDBDaoImpl extends AbstractMongoBaseDao<JobExecLogEntity> implements JobExecLogDao {
-    public JobExecLogMongoDBDaoImpl(@Autowired MongoTemplate mongoTemplate) {
-        super(mongoTemplate, TableConstant.JOB_EXEC_LOG_INFO);
+    public JobExecLogMongoDBDaoImpl(String collectionName, @Autowired MongoTemplate mongoTemplate) {
+        super(mongoTemplate, collectionName);
     }
 
     @Override
@@ -42,22 +44,19 @@ public class JobExecLogMongoDBDaoImpl extends AbstractMongoBaseDao<JobExecLogEnt
     }
 
     @Override
-    public PageResult<JobExecLogEntity> findAllByPage(JobExecLogEntity jobExecLogEntity) {
-
-        Map<String, String> param = new HashMap<>(3);
-        if (StringUtils.isNotBlank(jobExecLogEntity.getCluster())) {
-            param.put("cluster", jobExecLogEntity.getCluster());
-        }
-        if (StringUtils.isNotBlank(jobExecLogEntity.getSysCode())) {
-            param.put("sysCode", jobExecLogEntity.getSysCode());
-        }
-        if (StringUtils.isNotBlank(jobExecLogEntity.getTaskName())) {
-            param.put("taskName", jobExecLogEntity.getTaskName());
-        }
-
+    public PageResult<JobExecLogEntity> findAllByPage(JobExecLogEntity jobExecLogEntity, List<String> sysCodes) {
         int page = jobExecLogEntity.getPageNum() - 1;
         PageQueryParams pageQueryParams = new PageQueryParams(page, jobExecLogEntity.getPageSize());
-        Query query = getWhereParamsByRequest(param);
+        Query query = new Query();
+        query.addCriteria(sysCodes.contains(jobExecLogEntity.getSysCode())
+                ? Criteria.where("sysCode").is(jobExecLogEntity.getSysCode())
+                : Criteria.where("sysCode").in(sysCodes));
+        if (StringUtils.isNotEmpty(jobExecLogEntity.getCluster())) {
+            query.addCriteria(Criteria.where("cluster").is(jobExecLogEntity.getCluster()));
+        }
+        if (StringUtils.isNotEmpty(jobExecLogEntity.getTaskName())) {
+            query.addCriteria(Criteria.where("taskName").regex(".*?" + jobExecLogEntity.getTaskName() + ".*", "i"));
+        }
         if (jobExecLogEntity.getStartDate() != null) {
             //使用调度的开始时间判断
             Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
@@ -72,14 +71,14 @@ public class JobExecLogMongoDBDaoImpl extends AbstractMongoBaseDao<JobExecLogEnt
             }
         }
         Long count = this.countByQuery(query);
-
         query.with(new Sort(Sort.Direction.DESC, "startDate"));
+        return super.generatePageResult(count, jobExecLogEntity.getPageSize(), page, this.selectByQuery(query, pageQueryParams));
+    }
 
-        final PageResult<JobExecLogEntity> pageResult = new PageResult<>();
-        pageResult.setTotal(count);
-        pageResult.setPageSize(jobExecLogEntity.getPageSize());
-        pageResult.setPageNum(page);
-        pageResult.setList(this.selectByQuery(query, pageQueryParams));
-        return pageResult;
+    @Override
+    public void delete(String taskName) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("taskName").is(taskName));
+        super.delete(query);
     }
 }

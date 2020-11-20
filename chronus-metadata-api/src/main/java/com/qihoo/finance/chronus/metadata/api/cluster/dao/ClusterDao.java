@@ -18,7 +18,7 @@ public interface ClusterDao {
      * 更新集群描述
      * @param clusterEntity
      */
-    void updateDesc(ClusterEntity clusterEntity);
+    void update(ClusterEntity clusterEntity);
 
     /**
      * 删除集群配置
@@ -38,4 +38,8 @@ public interface ClusterDao {
      * @return
      */
     List<ClusterEntity> selectListAll();
+
+    void dataGuardStartTrx(String dataGuardCluster);
+
+    void dataGuardStop(String dataGuardCluster);
 }

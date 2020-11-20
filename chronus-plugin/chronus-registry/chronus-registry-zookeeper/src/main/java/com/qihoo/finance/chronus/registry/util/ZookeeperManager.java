@@ -1,12 +1,12 @@
 package com.qihoo.finance.chronus.registry.util;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.ACLProvider;
-import org.apache.curator.framework.imps.CuratorFrameworkState;
-import org.apache.curator.retry.RetryUntilElapsed;
+import org.apache.curator.framework.api.transaction.CuratorOp;
+import org.apache.curator.framework.api.transaction.CuratorTransactionResult;
+import org.apache.curator.retry.RetryNTimes;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -16,9 +16,9 @@ import org.apache.zookeeper.data.Stat;
 import org.apache.zookeeper.server.auth.DigestAuthenticationProvider;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 
 @Slf4j
@@ -26,10 +26,9 @@ public class ZookeeperManager {
     private CuratorFramework curator;
     private List<ACL> acl = new ArrayList<>();
     private Properties properties;
-    private boolean isCheckParentPath = true;
 
     public enum keys {
-        zkConnectString, rootPath, userName, password, zkSessionTimeout, zkConnectionTimeout, isCheckParentPath
+        zkConnectString, rootPath, userName, password, zkSessionTimeout, zkConnectionTimeout
     }
 
     public ZookeeperManager(Properties properties) throws Exception {
@@ -51,12 +50,10 @@ public class ZookeeperManager {
     }
 
     private void connect() throws Exception {
-        RetryPolicy retryPolicy = new RetryUntilElapsed(Integer.MAX_VALUE, 10);
         String userName = properties.getProperty(keys.userName.toString());
         String zkConnectString = properties.getProperty(keys.zkConnectString.toString());
         int zkSessionTimeout = Integer.parseInt(properties.getProperty(keys.zkSessionTimeout.toString()));
         int zkConnectionTimeout = Integer.parseInt(properties.getProperty(keys.zkConnectionTimeout.toString()));
-        boolean isCheckParentPath = Boolean.parseBoolean(properties.getProperty(keys.isCheckParentPath.toString(), "true"));
         String authString = userName + ":" + properties.getProperty(keys.password.toString());
         acl.clear();
         acl.add(new ACL(ZooDefs.Perms.ALL, new Id("digest", DigestAuthenticationProvider.generateDigest(authString))));
@@ -65,30 +62,36 @@ public class ZookeeperManager {
         log.info("zkConnectString:{}", zkConnectString);
         log.info("zkSessionTimeout:{}", zkSessionTimeout);
         log.info("zkConnectionTimeout:{}", zkConnectionTimeout);
-        log.info("isCheckParentPath:{}", isCheckParentPath);
         log.info("userName:{}", userName);
 
         curator = CuratorFrameworkFactory.builder().connectString(zkConnectString)
                 .sessionTimeoutMs(zkSessionTimeout)
                 .connectionTimeoutMs(zkConnectionTimeout)
-                .retryPolicy(retryPolicy).authorization("digest", authString.getBytes())
+                .retryPolicy(new RetryNTimes(1, 1000))
+                .authorization("digest", authString.getBytes())
                 .aclProvider(new ACLProvider() {
                     @Override
                     public List<ACL> getDefaultAcl() {
-                        return ZooDefs.Ids.CREATOR_ALL_ACL;
+                        return acl;
                     }
 
                     @Override
                     public List<ACL> getAclForPath(String path) {
-                        return ZooDefs.Ids.CREATOR_ALL_ACL;
+                        return acl;
                     }
-                }).build();
+                })
+                .build();
         curator.start();
-        log.info("----------------------------创建ZK连接成功----------------------------");
-        this.isCheckParentPath = isCheckParentPath;
+        boolean connected = curator.blockUntilConnected(zkConnectionTimeout, TimeUnit.MILLISECONDS);
+        if (!connected) {
+            throw new IllegalStateException("zookeeper not connected zkConnectString:" + zkConnectString);
+        }
+        String rootPath = getRootPath();
+        boolean flag = checkExists(rootPath);
+        log.info("----------------------------创建ZK连接成功 RootPath:{} Exists:{}----------------------------", rootPath, flag);
     }
 
-    public void close() throws InterruptedException {
+    public void close() {
         log.info("关闭zookeeper连接");
         if (curator == null) {
             return;
@@ -100,31 +103,20 @@ public class ZookeeperManager {
         return properties.getProperty(keys.rootPath.toString());
     }
 
-    public boolean checkZookeeperState() throws Exception {
-        return curator != null && curator.getState() == CuratorFrameworkState.STARTED && curator.getZookeeperClient().isConnected();
-    }
-
     public void initial() throws Exception {
         //当zk状态正常后才能调用
         // 根路径初始化
         if (curator.checkExists().forPath(this.getRootPath()) == null) {
             createPath(curator, this.getRootPath(), CreateMode.PERSISTENT, acl);
-            if (isCheckParentPath) {
-                checkParent(curator, this.getRootPath());
-            }
             //设置版本信息
             curator.setData().forPath(this.getRootPath(), Version.getVersion().getBytes());
         } else {
-            //先校验父亲节点，本身是否已经是schedule的目录
-            if (isCheckParentPath) {
-                checkParent(curator, this.getRootPath());
-            }
             byte[] value = curator.getData().forPath(this.getRootPath());
             if (value == null) {
                 curator.setData().forPath(this.getRootPath(), Version.getVersion().getBytes());
             } else {
                 String dataVersion = new String(value);
-                if (Version.isCompatible(dataVersion) == false) {
+                if (!Version.isCompatible(dataVersion)) {
                     throw new Exception("chronus程序版本 " + Version.getVersion() + " 不兼容Zookeeper中的数据版本 " + dataVersion);
                 }
                 log.info("当前的程序版本:" + Version.getVersion() + " 数据版本: " + dataVersion + " ZK 根路径初始化完成!");
@@ -132,35 +124,8 @@ public class ZookeeperManager {
         }
     }
 
-    public static void checkParent(CuratorFramework curator, String path) throws Exception {
-        String[] list = path.split("/");
-        String zkPath = "";
-        for (int i = 0; i < list.length - 1; i++) {
-            String str = list[i];
-            if ("".equals(str) == false) {
-                zkPath = zkPath + "/" + str;
-                if (curator.checkExists().forPath(zkPath) != null) {
-                    byte[] value = curator.getData().forPath(zkPath);
-                    if (value != null) {
-                        String tmpVersion = new String(value);
-                        if (tmpVersion.indexOf("chronus-schedule-") >= 0) {
-                            throw new Exception("\"" + zkPath + "\"  is already a schedule instance's root directory, its any subdirectory cannot as the root directory of others");
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private List<ACL> getAcl() {
         return acl;
-    }
-
-    public CuratorFramework getCurator() throws Exception {
-        if (this.checkZookeeperState() == false) {
-            reConnection();
-        }
-        return this.curator;
     }
 
     public boolean checkExists(String path) throws Exception {
@@ -216,8 +181,6 @@ public class ZookeeperManager {
         return new ArrayList<>();
     }
 
-
-
     public void deleteTree(String path) throws Exception {
         if (!checkExists(path)) {
             return;
@@ -233,4 +196,13 @@ public class ZookeeperManager {
         }
     }
 
+    public CuratorOp createSetDataOp(String path, String data) throws Exception {
+        CuratorOp setDataOp = this.curator.transactionOp().setData().forPath(path, data.getBytes());
+        return setDataOp;
+    }
+
+    public List<CuratorTransactionResult> forOperations(List<CuratorOp> curatorOps) throws Exception {
+        List<CuratorTransactionResult> results = this.curator.transaction().forOperations(curatorOps);
+        return results;
+    }
 }

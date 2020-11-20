@@ -6,11 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
+@Target({ElementType.TYPE})
 public @interface Job {
-    /**
-     * Job定义的id 格式为 所在Bean名字.系统内唯一标识 如: XXXJob.deleteLog
-     * @return
-     */
-    String key();
+
 }

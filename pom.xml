@@ -17,7 +17,7 @@
         <module>chronus-console</module>
         <module>chronus-bootstrap</module>
         <module>chronus-master</module>
-        <module>chronus-executor</module>
+        <module>chronus-worker</module>
         <module>chronus-plugin</module>
         <module>chronus-metadata-api</module>
         <module>chronus-spring-boot</module>
@@ -25,9 +25,9 @@
     </modules>
 
     <properties>
-        <spring-boot.version>2.1.8.RELEASE</spring-boot.version>
-        <dubbo.version>2.7.3</dubbo.version>
-        <spring.version>5.1.7.RELEASE</spring.version>
+        <spring-boot.version>2.1.11.RELEASE</spring-boot.version>
+        <dubbo.version>2.7.4.1</dubbo.version>
+        <spring.version>5.1.17.RELEASE</spring.version>
         <mybatis-spring-boot-starter.version>2.0.1</mybatis-spring-boot-starter.version>
         <pagehelper-spring-boot-starter.version>1.2.12</pagehelper-spring-boot-starter.version>
         <mapper-spring-boot-starter.version>2.1.5</mapper-spring-boot-starter.version>
@@ -36,28 +36,26 @@
         <pagehelper.version>5.1.10</pagehelper.version>
         <tk.mybatis.version>4.0.1</tk.mybatis.version>
         <lombok.version>1.18.8</lombok.version>
-        <fastjson.version>1.2.62</fastjson.version>
+        <fastjson.version>1.2.70</fastjson.version>
         <mybatis.version>3.5.1</mybatis.version>
         <mybatis-spring.version>2.0.1</mybatis-spring.version>
-        <hibernate-validator.version>6.1.0.Final</hibernate-validator.version>
+        <hibernate-validator.version>6.0.16.Final</hibernate-validator.version>
         <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
         <commons-lang3.version>3.9</commons-lang3.version>
         <commons-io.version>2.6</commons-io.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <commons-fileupload.version>1.3.3</commons-fileupload.version>
         <guava.version>27.1-jre</guava.version>
-        <reflections.version>0.9.11</reflections.version>
-        <log4j2.version>2.13.3</log4j2.version>
+        <log4j2.version>2.11.2</log4j2.version>
         <slf4j.version>1.7.26</slf4j.version>
         <ehcache.version>2.10.6</ehcache.version>
         <lettuce.version>5.1.6.RELEASE</lettuce.version>
-        <aspectj.version>1.9.4</aspectj.version>
         <jackson-annotations.version>2.9.9</jackson-annotations.version>
         <mongodb-driver.version>3.8.2</mongodb-driver.version>
-        <spring-data-mongodb.version>2.1.8.RELEASE</spring-data-mongodb.version>
+        <spring-data-commons.version>2.1.10.RELEASE</spring-data-commons.version>
         <shiro-spring.version>1.4.2</shiro-spring.version>
         <curator.version>4.2.0</curator.version>
-
+        <quartz.version>2.3.2</quartz.version>
         <!-- Build args -->
         <maven_compiler_plugin_version>2.5.1</maven_compiler_plugin_version>
         <maven_source_plugin_version>3.0.1</maven_source_plugin_version>
@@ -65,6 +63,7 @@
         <versions_maven_plugin_version>2.5</versions_maven_plugin_version>
         <maven_jar_plugin_version>2.4</maven_jar_plugin_version>
         <maven_war_plugin_version>2.4</maven_war_plugin_version>
+        <spring_boot_maven_plugin_version>2.1.8.RELEASE</spring_boot_maven_plugin_version>
 
         <skip_maven_deploy>false</skip_maven_deploy>
         <java_source_version>1.8</java_source_version>
@@ -153,11 +152,6 @@
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.reflections</groupId>
-                <artifactId>reflections</artifactId>
-                <version>${reflections.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -185,16 +179,6 @@
                 <version>${lettuce.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.aspectj</groupId>
-                <artifactId>aspectjrt</artifactId>
-                <version>${aspectj.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.aspectj</groupId>
-                <artifactId>aspectjweaver</artifactId>
-                <version>${aspectj.version}</version>
-            </dependency>
             <dependency>
                 <groupId>net.sf.ehcache</groupId>
                 <artifactId>ehcache</artifactId>
@@ -245,7 +229,6 @@
                 <artifactId>jackson-annotations</artifactId>
                 <version>${jackson-annotations.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongodb-driver</artifactId>
@@ -254,7 +237,7 @@
             <dependency>
                 <groupId>org.springframework.data</groupId>
                 <artifactId>spring-data-mongodb</artifactId>
-                <version>${spring-data-mongodb.version}</version>
+                <version>${spring-data-commons.version}</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>mongo-java-driver</artifactId>
@@ -299,7 +282,7 @@
             <dependency>
                 <groupId>org.springframework.data</groupId>
                 <artifactId>spring-data-commons</artifactId>
-                <version>${spring-data-mongodb.version}</version>
+                <version>${spring-data-commons.version}</version>
             </dependency>
 
             <dependency>
@@ -326,6 +309,12 @@
                 <groupId>com.alibaba.boot</groupId>
                 <artifactId>nacos-discovery-spring-boot-starter</artifactId>
                 <version>${nacos-discovery-spring-boot-starter.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.quartz-scheduler</groupId>
+                <artifactId>quartz</artifactId>
+                <version>${quartz.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -358,5 +347,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

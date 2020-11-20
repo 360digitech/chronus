@@ -1,13 +1,14 @@
 package com.qihoo.finance.chronus.storage.h2.plugin.repository;
 
-import com.qihoo.finance.chronus.storage.h2.plugin.entity.ClusterH2Entity;
-import com.qihoo.finance.chronus.storage.h2.plugin.util.EnvTestCaseUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import com.qihoo.finance.chronus.storage.h2.plugin.entity.ClusterH2Entity;
+import com.qihoo.finance.chronus.storage.h2.plugin.util.EnvTestCaseUtil;
 
 /**
  * @author zhangsi-pc.

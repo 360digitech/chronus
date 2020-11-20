@@ -9,6 +9,7 @@ import org.springframework.data.annotation.Transient;
 
 import javax.validation.constraints.NotBlank;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 调度执行日志
@@ -56,13 +57,8 @@ public class JobExecLogEntity extends Entity {
      * 失败数
      */
     private Long handleFailCount;
-    /**
-     * 处理结果
-     */
-    private String handleDetail;
 
     /* 非db字段 */
-
     @Transient
     private Integer pageSize;
     @Transient

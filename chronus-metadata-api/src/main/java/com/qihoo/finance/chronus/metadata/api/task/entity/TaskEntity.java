@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.qihoo.finance.chronus.metadata.api.common.Entity;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 
@@ -17,26 +19,31 @@ import java.util.Date;
  */
 @Getter
 @Setter
+@Accessors(chain = true)
 public class TaskEntity extends Entity {
 
     @Id
     private String id;
 
-    @NotBlank
+    /**
+     * 任务优先执行集群
+     */
+    @NotBlank(message = "优先运行集群必选!")
     private String cluster;
 
-    @NotBlank
+    @NotBlank(message = "任务归属TAG必选!")
     private String tag;
 
     /**
      * 任务名称
      */
-    @NotBlank
+    @Length(min = 3, max = 64, message = "请使用合理的任务名称!")
     private String taskName;
 
     /**
      * 备注
      */
+    @Length(max = 64, message = "任务备注不能过长!")
     private String remark;
 
     /**
@@ -44,12 +51,6 @@ public class TaskEntity extends Entity {
      * 默认5秒
      */
     private Integer heartBeatRate = 5;
-
-    /**
-     * 判断一个服务器死亡的周期。为了安全，至少是心跳周期的两倍以上
-     * 默认一分钟
-     */
-    private Integer judgeDeadInterval = 60;
 
     /**
      * 当没有数据的时候，休眠的时间
@@ -79,66 +80,44 @@ public class TaskEntity extends Entity {
     /**
      * 调度器类型
      */
-    private String processorType = "SLEEP";
+    @Length(min = 1, max = 32, message = "调度器类型必选!")
+    private String processorType = "SelectExecuteFlow";
     /**
      * 允许执行的开始时间
      */
-    @NotBlank
+    @NotBlank(message = "任务启动时间必填!")
     private String permitRunStartTime;
-    /**
-     * 允许执行的结束时间
-     */
-    private String permitRunEndTime;
 
-    /**
-     * 处理任务的BeanName CHRONUS_JOB等
-     */
-    @NotBlank
-    private String dealBeanName;
     /**
      * 处理任务的系统编码
      */
-    @NotBlank
+    @NotBlank(message = "任务归属服务必选!")
     private String dealSysCode;
 
     /**
      * 处理调度逻辑的业务系统beanName
      */
+    @NotBlank(message = "业务系统任务处理Bean必填!")
     private String dealBizBeanName;
 
     /**
      * 任务bean的参数，由用户自定义格式的字符串
      */
+    @Length(max = 5000, message = "任务处理参数不能过长!")
     private String taskParameter;
 
     /**
      * 任务项数组格式化字符串
      */
+    @Length(max = 2200, message = "任务项参数不能过长!")
     private String taskItems;
-
-    /**
-     * 强制按照Cron表达式执行
-     */
-    private String forceCronExec;
 
     /**
      * 指定需要执行调度的机器数量
      */
     private Integer assignNum = 1;
 
-    private String state = "normal";
-
-    private String isBroadcastInvoker;
-
-    private String executorConfig;
-
-
-    /* 非db字段 */
-    @Transient
-    private Integer pageSize;
-    @Transient
-    private Integer pageNum;
-
+    private String state = "START";
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date dateCreated;
@@ -150,5 +129,9 @@ public class TaskEntity extends Entity {
 
     private String updatedBy = "sys";
 
+    @Transient
+    private Integer pageSize;
+    @Transient
+    private Integer pageNum;
 }
 

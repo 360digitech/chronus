@@ -10,10 +10,6 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
 
-    <properties>
-        <skip_maven_deploy>true</skip_maven_deploy>
-    </properties>
-
     <artifactId>chronus-storage-mongodb-plugin</artifactId>
 
     <dependencies>
@@ -22,34 +18,4 @@
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>${maven_jar_plugin_version}</version>
-                <executions>
-                    <!-- 定义在prepare-package时将classes/com打jar -->
-                    <execution>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <excludes>
-                                <!-- 将spring的配置，psoperties等属性文件，不要打包到jar中，而是打包到外层的tar.gz中 -->
-                                <exclude>spring/**</exclude>
-                                <exclude>properties/**</exclude>
-                                <exclude>*.xml</exclude>
-                                <exclude>*.properties</exclude>
-                            </excludes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
-
 </project>

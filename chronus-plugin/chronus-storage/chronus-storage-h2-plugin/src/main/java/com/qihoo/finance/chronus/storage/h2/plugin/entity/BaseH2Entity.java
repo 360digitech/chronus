@@ -14,8 +14,9 @@ import java.io.Serializable;
 @Getter
 @Setter
 public class BaseH2Entity implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-    @Override
+	@Override
     public String toString() {
         return JSON.toJSONString(this);
     }

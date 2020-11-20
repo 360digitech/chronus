@@ -15,6 +15,7 @@
     <modules>
         <module>chronus-storage</module>
         <module>chronus-registry</module>
+        <module>chronus-protocol</module>
     </modules>
 
 </project>

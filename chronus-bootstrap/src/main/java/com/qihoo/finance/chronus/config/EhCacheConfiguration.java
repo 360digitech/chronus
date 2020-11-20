@@ -1,8 +1,9 @@
 package com.qihoo.finance.chronus.config;
 
-import com.qihoo.finance.chronus.common.ehcache.Ehcache;
+import com.qihoo.finance.chronus.common.ehcache.ChronusEhcache;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.ehcache.CacheManager;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.ehcache.EhCacheCacheManager;
 import org.springframework.cache.ehcache.EhCacheManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
@@ -10,8 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
 /**
- * MsfSystemAutoConfiguration class
- *
  * @author xiongpu
  * @date 2019/06/29
  */
@@ -20,15 +19,17 @@ import org.springframework.core.io.ClassPathResource;
 public class EhCacheConfiguration {
 
     @Bean
-    public EhCacheCacheManager ehCacheCacheManager(CacheManager cacheManager) {
+    @ConditionalOnMissingBean
+    public EhCacheCacheManager cacheManager(CacheManager ehCacheManager) {
         EhCacheCacheManager ehCacheCacheManager = new EhCacheCacheManager();
-        ehCacheCacheManager.setCacheManager(cacheManager);
+        ehCacheCacheManager.setCacheManager(ehCacheManager);
         log.debug("EhCacheCacheManager初始化完成");
         return ehCacheCacheManager;
     }
 
     @Bean
-    public EhCacheManagerFactoryBean cacheManager() {
+    @ConditionalOnMissingBean
+    public EhCacheManagerFactoryBean ehCacheManager() {
         ClassPathResource config = new ClassPathResource("/cache/ehcache-local.xml");
         EhCacheManagerFactoryBean ehCacheManagerFactoryBean = new EhCacheManagerFactoryBean();
         ehCacheManagerFactoryBean.setConfigLocation(config);
@@ -37,8 +38,7 @@ public class EhCacheConfiguration {
     }
 
     @Bean
-    public Ehcache ehcache() {
-        return new Ehcache();
+    public ChronusEhcache chronusEhcache() {
+        return new ChronusEhcache();
     }
-
 }

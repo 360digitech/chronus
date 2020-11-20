@@ -5,6 +5,7 @@ import com.qihoo.finance.chronus.registry.api.NamingService;
 import com.qihoo.finance.chronus.registry.util.ZookeeperManager;
 import com.qihoo.finance.chronus.registry.zookeeper.MasterElectionServiceZookeeperImpl;
 import com.qihoo.finance.chronus.registry.zookeeper.NamingServiceZookeeperImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -17,6 +18,7 @@ import java.util.Properties;
 /**
  * Created by xiongpu on 2019/9/21.
  */
+@Slf4j
 @Configuration
 @EnableConfigurationProperties({RegistryZookeeperProperties.class})
 @ConditionalOnProperty(prefix = "chronus", name = {"registry"}, havingValue = "zookeeper", matchIfMissing = true)
@@ -43,6 +45,7 @@ public class RegistryZookeeperConfiguration {
     public ZookeeperManager zkManager(RegistryZookeeperProperties registryZookeeperProperties, Environment environment) throws Exception {
         String zkAddress = registryZookeeperProperties.getAddress();
         if (StringUtils.isBlank(zkAddress)) {
+            log.info("chronus.registry.zookeeper.address is empty About to use dubbo.registry.address config");
             zkAddress = environment.getProperty("dubbo.registry.address");
             if (StringUtils.isNotBlank(zkAddress)) {
                 //zookeeper://127.0.0.1:2181?backup=127.0.0.1:2182,127.0.0.1:2183
@@ -50,18 +53,17 @@ public class RegistryZookeeperConfiguration {
                 zkAddress = zkAddress.replace("?backup=", ",");
             }
         }
-        if(StringUtils.isBlank(zkAddress)){
-            zkAddress="127.0.0.1:2181";
+        if (StringUtils.isBlank(zkAddress)) {
+            zkAddress = "127.0.0.1:2181";
         }
 
         Properties properties = new Properties();
-        properties.setProperty(ZookeeperManager.keys.zkConnectString.toString(),zkAddress);
-        properties.setProperty(ZookeeperManager.keys.rootPath.toString(),registryZookeeperProperties.getRootPath());
-        properties.setProperty(ZookeeperManager.keys.userName.toString(),registryZookeeperProperties.getUserName());
-        properties.setProperty(ZookeeperManager.keys.password.toString(),registryZookeeperProperties.getPassword());
-        properties.setProperty(ZookeeperManager.keys.zkSessionTimeout.toString(),String.valueOf(registryZookeeperProperties.getSessionTimeout()));
-        properties.setProperty(ZookeeperManager.keys.zkConnectionTimeout.toString(),String.valueOf(registryZookeeperProperties.getConnectionTimeout()));
-        properties.setProperty(ZookeeperManager.keys.isCheckParentPath.toString(),String.valueOf(registryZookeeperProperties.isCheckParentPath()));
+        properties.setProperty(ZookeeperManager.keys.zkConnectString.toString(), zkAddress);
+        properties.setProperty(ZookeeperManager.keys.rootPath.toString(), registryZookeeperProperties.getRootPath());
+        properties.setProperty(ZookeeperManager.keys.userName.toString(), registryZookeeperProperties.getUserName());
+        properties.setProperty(ZookeeperManager.keys.password.toString(), registryZookeeperProperties.getPassword());
+        properties.setProperty(ZookeeperManager.keys.zkSessionTimeout.toString(), String.valueOf(registryZookeeperProperties.getSessionTimeout()));
+        properties.setProperty(ZookeeperManager.keys.zkConnectionTimeout.toString(), String.valueOf(registryZookeeperProperties.getConnectionTimeout()));
 
         ZookeeperManager zkManager = new ZookeeperManager(properties);
         return zkManager;

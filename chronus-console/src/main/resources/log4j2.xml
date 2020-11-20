@@ -2,9 +2,9 @@
 <configuration status="WARN" shutdownHook="disable">
     <Properties>
         <Property name="sysName">chronus-console</Property>
-        <Property name="bizLogLevel">${env.log4j2.biz.level}</Property>
-        <Property name="otherLogLevel">${env.log4j2.other.level}</Property>
-        <Property name="logFilePath">${env.log4j2.log.path}</Property>
+        <Property name="bizLogLevel">DEBUG</Property>
+        <Property name="otherLogLevel">DEBUG</Property>
+        <Property name="logFilePath">./logs</Property>
         <Property name="errorLogFile">${sysName}_err</Property>
         <Property name="bizLogFile">${sysName}_biz</Property>
         <Property name="allLogFile">${sysName}_all</Property>
@@ -15,7 +15,7 @@
     </Properties>
     <appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <ThresholdFilter level="${env.log4j2.biz.level}" onMatch="ACCEPT" onMismatch="DENY"/>
+            <ThresholdFilter level="${bizLogLevel}" onMatch="ACCEPT" onMismatch="DENY"/>
             <PatternLayout charset="UTF-8"
                            pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] [%X{requestNo}|%X{consumerIp}|%X{sysCode}] [%c:%line] - %msg%n"/>
         </Console>
@@ -114,9 +114,14 @@
         </RollingFile>
     </appenders>
     <loggers>
-        <logger name="net.sf.ehcache.store.disk.Segment" level="INFO" additivity="false">
+        <logger name="net.sf.ehcache.store.disk.Segment" level="${bizLogLevel}" additivity="false">
             <appender-ref ref="AllRollingFile"/>
-            <appender-ref ref="Console"/>
+        </logger>
+        <logger name="org.mongodb.driver" level="${bizLogLevel}" additivity="false">
+            <appender-ref ref="AllRollingFile"/>
+        </logger>
+        <logger name="org.apache.zookeeper.ClientCnxn" level="${bizLogLevel}" additivity="false">
+            <appender-ref ref="AllRollingFile"/>
         </logger>
         <logger name="com.qihoo.finance.chronus" level="${bizLogLevel}" additivity="false">
             <appender-ref ref="ErrorRollingFile" />

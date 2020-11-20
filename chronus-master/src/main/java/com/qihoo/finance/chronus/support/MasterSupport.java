@@ -4,16 +4,18 @@ import com.qihoo.finance.chronus.common.NodeInfo;
 import com.qihoo.finance.chronus.common.SupportConstants;
 import com.qihoo.finance.chronus.common.ThreadFactory;
 import com.qihoo.finance.chronus.common.job.AbstractTimerTask;
+import com.qihoo.finance.chronus.master.bo.TaskAssignContext;
 import com.qihoo.finance.chronus.master.config.MasterProperties;
+import com.qihoo.finance.chronus.master.service.TaskAssignRefreshService;
 import com.qihoo.finance.chronus.master.service.TaskAssignService;
 import com.qihoo.finance.chronus.registry.api.MasterElectionService;
-import com.qihoo.finance.chronus.registry.api.NamingService;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Resource;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -22,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class MasterSupport implements Support {
     private static final ScheduledExecutorService TASK_ASSIGN_SCHEDULE = Executors.newSingleThreadScheduledExecutor(new ThreadFactory(SupportConstants.SUPPORT_NAME_MASTER, SupportConstants.MAIN));
+    private static ScheduledFuture TASK_ASSIGN_SCHEDULE_FUTURE;
     @Resource
     private MasterElectionService masterElectionService;
 
@@ -29,46 +32,50 @@ public class MasterSupport implements Support {
     private MasterProperties masterProperties;
 
     @Resource
-    private TaskAssignService taskAssignService;
-
-    @Resource
-    private NamingService namingService;
+    private TaskAssignRefreshService taskAssignRefreshService;
 
     @Resource
     private NodeInfo currentNode;
 
     @Override
     public void start() throws Exception {
-        TASK_ASSIGN_SCHEDULE.scheduleWithFixedDelay(masterTimerTask, masterProperties.getTaskAssignTimerTaskInitialDelay(), masterProperties.getTaskAssignTimerTaskDelay(), TimeUnit.SECONDS);
+        if (TASK_ASSIGN_SCHEDULE_FUTURE != null && !TASK_ASSIGN_SCHEDULE_FUTURE.isCancelled()) {
+            TASK_ASSIGN_SCHEDULE_FUTURE.cancel(false);
+        }
+        TASK_ASSIGN_SCHEDULE_FUTURE = TASK_ASSIGN_SCHEDULE.scheduleWithFixedDelay(masterTimerTask, masterProperties.getTaskAssignTimerTaskInitialDelay(), masterProperties.getTaskAssignTimerTaskDelay(), TimeUnit.SECONDS);
     }
 
-    private Runnable masterTimerTask = new AbstractTimerTask(SupportConstants.SUPPORT_NAME_MASTER, "taskAssign") {
+    private Runnable masterTimerTask = new AbstractTimerTask(SupportConstants.SUPPORT_NAME_MASTER, "taskAssign", true) {
         @Override
         public void process() throws Exception {
-            if (!namingService.currentNodeIsActive()) {
-                log.warn("当前节点已下线,停止处理!");
-                taskAssignService.clear();
+            masterElectionService.setMasterGroupByTag(masterProperties.isMasterGroupByTag());
+            if (masterElectionService.isMaster()) {
+                TaskAssignService taskAssignService = TaskAssignService.create().init();
+                if (taskAssignService.isNeedAssign()) {
+                    taskAssignService.taskAssign();
+                }
                 return;
             }
-            if (namingService.isMaster()) {
-                taskAssignService.taskAssign();
+            log.debug("当前节点非Master,开始对现有Master进行检查...");
+            if (masterElectionService.isActiveMaster()) {
+                taskAssignRefreshService.shutdownRefreshTask();
                 return;
             }
-
-            if (namingService.isActiveMaster()) {
-                return;
-            }
-
-            String masterNodeAddress = masterElectionService.election();
+            String masterNodeAddress = masterElectionService.election(currentNode.getAddress());
+            log.info("节点被选举为Master IP:{}", masterNodeAddress);
             if (Objects.equals(currentNode.getAddress(), masterNodeAddress)) {
-                log.info("当前节点自动被选举为Master IP:{}", masterNodeAddress);
-                namingService.nodeElectedMaster(masterNodeAddress);
+                TaskAssignContext.clear();
+                taskAssignRefreshService.restartRefreshTask();
             }
         }
     };
 
     @Override
     public void stop() {
-        TASK_ASSIGN_SCHEDULE.shutdown();
+        if (TASK_ASSIGN_SCHEDULE_FUTURE != null && !TASK_ASSIGN_SCHEDULE_FUTURE.isCancelled()) {
+            TASK_ASSIGN_SCHEDULE_FUTURE.cancel(false);
+        }
+
+        taskAssignRefreshService.shutdownRefreshTask();
     }
 }

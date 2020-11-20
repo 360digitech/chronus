@@ -17,6 +17,6 @@ public final class ContextConstKey {
      * 请求流水号
       */
     public static final String REQUEST_NO = "requestNo";
-    public static final String SYS_CODE = "sysCode";
+    public static final String SERVICE_NAME = "serviceName";
     public static final String BEAN_NAME = "beanName";
 }

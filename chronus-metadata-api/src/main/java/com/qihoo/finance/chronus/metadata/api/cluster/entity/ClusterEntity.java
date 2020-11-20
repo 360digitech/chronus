@@ -30,6 +30,11 @@ public class ClusterEntity extends Entity {
      */
     private String clusterDesc;
 
+    /**
+     * 集群状态
+     */
+    private String clusterState;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date dateCreated;
 

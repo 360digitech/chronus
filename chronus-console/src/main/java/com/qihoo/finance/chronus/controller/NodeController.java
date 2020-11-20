@@ -2,14 +2,14 @@ package com.qihoo.finance.chronus.controller;
 
 import com.qihoo.finance.chronus.common.domain.Response;
 import com.qihoo.finance.chronus.common.util.ControllerUtil;
+import com.qihoo.finance.chronus.core.log.NodeLogService;
+import com.qihoo.finance.chronus.metadata.api.log.entity.NodeLogEntity;
 import com.qihoo.finance.chronus.registry.api.NamingService;
 import com.qihoo.finance.chronus.registry.api.Node;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -28,7 +28,8 @@ public class NodeController {
     @Resource
     private NamingService namingService;
 
-
+    @Resource
+    private NodeLogService nodeLogService;
     /**
      * 机器下线
      *
@@ -76,16 +77,19 @@ public class NodeController {
     }
 
     @RequestMapping(value = "/getAllNode", method = RequestMethod.POST)
-    public Response getAllNode(@RequestBody Node nodeEntity) throws Exception {
+    public Response getAllNode() throws Exception {
         Response response = new Response().success();
-        if(nodeEntity.getCluster()== null || "".equals(nodeEntity.getCluster())){
-            List<Node> allNode = new ArrayList<>();
-            response.setData(allNode);
-            return response;
-        }
-        List<Node> allNode = namingService.getAllNode(nodeEntity.getCluster());
+        List<Node> allNode = namingService.getAllNode();
         response.setData(allNode);
         return response;
     }
 
+
+    @RequestMapping(value = "/log/{cluster}/{address}/{version}", method = RequestMethod.GET)
+    public Response getAllNode(@PathVariable(name = "cluster") String cluster, @PathVariable(name = "address") String address, @PathVariable(name = "version") String version) throws Exception {
+        Response response = new Response().success();
+        List<NodeLogEntity> allEvent = nodeLogService.getLog(cluster, address);
+        response.setData(allEvent);
+        return response;
+    }
 }

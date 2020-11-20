@@ -1,26 +1,34 @@
 package com.qihoo.finance.chronus.storage.h2.plugin.entity;
 
-import com.qihoo.finance.chronus.metadata.api.common.TableConstant;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import org.springframework.data.annotation.Transient;
 
-import javax.persistence.*;
-import java.sql.Timestamp;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.qihoo.finance.chronus.metadata.api.common.TableConstant;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
- * @author jane.zhang
- * @Date 2019/9/22
- * @Description
+ * @author liuronghua
+ * @date 2019年11月20日 下午4:28:19
+ * @version 5.1.0
  */
 @Getter
 @Setter
 @Entity
 @Table(name = TableConstant.TASK_INFO)
 public class TaskH2Entity extends BaseH2Entity{
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+	private static final long serialVersionUID = 1L;
+
+	@Id
+    private String id;
 
     @Column(name = "cluster")
     private String cluster;
@@ -58,13 +66,13 @@ public class TaskH2Entity extends BaseH2Entity{
      * 当没有数据的时候，休眠的时间
      */
     @Column(name = "sleep_time_no_data")
-    private Double sleepTimeNoData = 5D;
+    private Long sleepTimeNoData = 5L;
 
     /**
      * 在每次数据处理晚后休眠的时间
      */
     @Column(name = "sleep_time_interval")
-    private Double sleepTimeInterval = 5D;
+    private Long sleepTimeInterval = 5L;
 
     /**
      * 每次获取数据的数量
@@ -144,17 +152,16 @@ public class TaskH2Entity extends BaseH2Entity{
     @Column(name = "state")
     private String state = "normal";
 
-    @Column(name = "is_broadcast_invoker")
-    private String isBroadcastInvoker;
-
     @Column(name = "date_created")
-    private Timestamp dateCreated;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date dateCreated;
 
     @Column(name = "created_by")
     private String createdBy = "sys";
 
     @Column(name = "date_updated")
-    private Timestamp dateUpdated;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date dateUpdated;
 
     @Column(name = "updated_by")
     private String updatedBy = "sys";
@@ -164,6 +171,7 @@ public class TaskH2Entity extends BaseH2Entity{
      */
     @Transient
     private Integer pageSize;
+    
     @Transient
     private Integer pageNum;
 

@@ -1,13 +1,13 @@
 package com.qihoo.finance.chronus.controller;
 
-import com.qihoo.finance.chronus.common.domain.Response;
 import com.qihoo.finance.chronus.common.ChronusConstants;
+import com.qihoo.finance.chronus.common.domain.Response;
 import com.qihoo.finance.chronus.common.util.ControllerUtil;
-import com.qihoo.finance.chronus.core.cluster.service.ClusterService;
+import com.qihoo.finance.chronus.common.util.SecureUtils;
+import com.qihoo.finance.chronus.core.cluster.ClusterService;
 import com.qihoo.finance.chronus.metadata.api.cluster.entity.ClusterEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.SecurityUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,9 +46,9 @@ public class ClusterController {
             if (StringUtils.isBlank(clusterEntity.getCluster())) {
                 clusterEntity.setCluster(ChronusConstants.DEF_CLUSTER);
             }
-            String userName = (String) SecurityUtils.getSubject().getPrincipal();
-            clusterEntity.setCreatedBy(userName);
-            clusterEntity.setUpdatedBy(userName);
+            String user = (String) SecureUtils.getPrincipal();
+            clusterEntity.setCreatedBy(user);
+            clusterEntity.setUpdatedBy(user);
             clusterService.insert(clusterEntity);
         } catch (Exception e) {
             log.error("新增环境配置异常! envEntity:{}", clusterEntity, e);
@@ -84,10 +84,11 @@ public class ClusterController {
             if (ControllerUtil.checkResponse(response, bindingResult).failed()) {
                 return response;
             }
-            String userName = (String) SecurityUtils.getSubject().getPrincipal();
-            clusterEntity.setUpdatedBy(userName);
+            // 如果想开启集群,但是已有集群启动容灾状态,则不能开启
+            String user = (String) SecureUtils.getPrincipal();
+            clusterEntity.setUpdatedBy(user);
             clusterEntity.setDateUpdated(new Date());
-            clusterService.updateDesc(clusterEntity);
+            clusterService.update(clusterEntity);
         } catch (Exception e) {
             log.error("更新环境配置异常! clusterEntity:{}", clusterEntity, e);
             response.hinderFail("更新环境配置异常" + e.getMessage());

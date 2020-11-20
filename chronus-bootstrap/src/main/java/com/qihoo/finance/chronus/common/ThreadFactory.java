@@ -1,6 +1,6 @@
 package com.qihoo.finance.chronus.common;
 
-import com.qihoo.finance.chronus.metadata.api.task.entity.TaskEntity;
+import com.qihoo.finance.chronus.metadata.api.task.entity.TaskItemEntity;
 
 /**
  * Created by xiongpu on 2019/1/4.
@@ -9,8 +9,8 @@ public class ThreadFactory implements java.util.concurrent.ThreadFactory {
 
     private String threadName;
 
-    public ThreadFactory(TaskEntity taskEntity) {
-        this.threadName = taskEntity.getDealSysCode() + "-" + taskEntity.getTaskName() + "-exe";
+    public ThreadFactory(TaskItemEntity taskItemEntity) {
+        this.threadName = taskItemEntity.getTaskItemId() + "-exe";
     }
 
     public ThreadFactory(String threadName) {

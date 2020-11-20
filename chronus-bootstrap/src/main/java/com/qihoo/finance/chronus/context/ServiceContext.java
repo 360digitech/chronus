@@ -174,12 +174,12 @@ public class ServiceContext {
         return this;
     }
 
-    public String getSysCode() {
-        return this.getContextVar(ContextConstKey.SYS_CODE);
+    public String getServiceName() {
+        return this.getContextVar(ContextConstKey.SERVICE_NAME);
     }
 
     public ServiceContext setSysCode(String sysCode) {
-        this.addContextVar(ContextConstKey.SYS_CODE, sysCode);
+        this.addContextVar(ContextConstKey.SERVICE_NAME, sysCode);
         return this;
     }
 

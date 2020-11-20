@@ -9,6 +9,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Node {
+    private String registerTime;
+
     private String hostName;
 
     private String address;
@@ -20,10 +22,13 @@ public class Node {
     private String state;
 
     private String version;
+    /**
+     * 数据版本, 每次节点上线都会发生变化,初始化是节点的版本(节点启动创建时间)
+     */
     private String dataVersion;
 
     private String isMaster;
 
     private String enableMaster;
-    private String enableExecutor;
+    private String enableWorker;
 }
