@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="WARN" shutdownHook="disable">
+    <Properties>
+        <Property name="sysName">chronus-http-dubbo</Property>
+        <Property name="bizLogLevel">DEBUG</Property>
+        <Property name="otherLogLevel">DEBUG</Property>
+        <Property name="logFilePath">/home/q/app/logs</Property>
+        <Property name="logSize">1000 MB</Property>
+        <Property name="maxFile">100</Property>
+        <Property name="errorLogFile">${sysName}_err</Property>
+        <Property name="bizLogFile">${sysName}_biz</Property>
+        <Property name="allLogFile">${sysName}_all</Property>
+        <Property name="monitorLogFile">${sysName}_monitor</Property>
+        <Property name="ioLogFile">${sysName}_io</Property>
+    </Properties>
+
+    <appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <ThresholdFilter level="${bizLogLevel}" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout charset="UTF-8"
+                           pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] [%X{requestNo}|%X{consumerIp}|%X{sysChannelCode}|%X{localIp}] [%c:%line] - %msg%n"/>
+        </Console>
+        <RollingFile name="ErrorRollingFile" fileName="${logFilePath}/${errorLogFile}.log"
+                     filePattern="${logFilePath}/$${date:yyyy-MM}/${errorLogFile}-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout charset="UTF-8"
+                           pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] [%X{requestNo}|%X{consumerIp}|%X{sysChannelCode}|%X{localIp}] [%c:%line] - %msg%n"/>
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="${logSize}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${maxFile}"/>
+        </RollingFile>
+        <RollingFile name="BizRollingFile" fileName="${logFilePath}/${bizLogFile}.log"
+                     filePattern="${logFilePath}/$${date:yyyy-MM}/${bizLogFile}-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout charset="UTF-8"
+                           pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] [%X{requestNo}|%X{consumerIp}|%X{sysChannelCode}|%X{localIp}] [%c:%line] - %msg%n"/>
+            <Filters>
+                <ThresholdFilter level="${bizLogLevel}"/>
+                <ThresholdFilter level="ERROR" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="${logSize}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${maxFile}"/>
+        </RollingFile>
+        <RollingFile name="AllRollingFile" fileName="${logFilePath}/${allLogFile}.log"
+                     filePattern="${logFilePath}/$${date:yyyy-MM}/${allLogFile}-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout charset="UTF-8"
+                           pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] [%X{requestNo}|%X{consumerIp}|%X{sysChannelCode}|%X{localIp}] [%c:%line] - %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="${logSize}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${maxFile}"/>
+        </RollingFile>
+        <RollingFile name="MonitorRollingFile" fileName="${logFilePath}/${monitorLogFile}.log"
+                     filePattern="${logFilePath}/$${date:yyyy-MM}/${monitorLogFile}-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss.SSS}|%-5level|%msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="${logSize}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${maxFile}"/>
+        </RollingFile>
+        <RollingFile name="IORollingFile" fileName="${logFilePath}/${ioLogFile}.log"
+                     filePattern="${logFilePath}/$${date:yyyy-MM}/${ioLogFile}-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout charset="UTF-8"
+                           pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] [%X{requestNo}|%X{consumerIp}|%X{sysChannelCode}|%X{localIp}] [%c:%line] - %msg%n"/>
+            <Filters>
+                <ThresholdFilter level="${bizLogLevel}"/>
+                <ThresholdFilter level="ERROR" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="${logSize}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${maxFile}"/>
+        </RollingFile>
+    </appenders>
+    <loggers>
+        <logger name="com.qihoo.finance.msf.core.annotation.log.InputOutputLogger" level="${bizLogLevel}" additivity="false">
+            <appender-ref ref="IORollingFile"/>
+        </logger>
+        <logger name="com.qihoo.finance.msf.core.annotation.log" level="${bizLogLevel}" additivity="false">
+            <appender-ref ref="MonitorRollingFile"/>
+        </logger>
+
+        <logger name="com.qihoo.finance.chronus" level="${bizLogLevel}" additivity="false">
+            <appender-ref ref="BizRollingFile"/>
+            <appender-ref ref="ErrorRollingFile" />
+        </logger>
+
+        <root level="${otherLogLevel}">
+            <appender-ref ref="BizRollingFile"/>
+            <appender-ref ref="AllRollingFile"/>
+            <appender-ref ref="ErrorRollingFile"/>
+        </root>
+    </loggers>
+</configuration>
