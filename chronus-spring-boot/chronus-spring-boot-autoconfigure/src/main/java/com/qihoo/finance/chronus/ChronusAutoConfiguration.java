@@ -1,7 +1,7 @@
 package com.qihoo.finance.chronus;
 
 import com.qihoo.finance.chronus.sdk.AbstractSdkService;
-import com.qihoo.finance.chronus.sdk.ChronusSdkProcessor;
+import com.qihoo.finance.chronus.sdk.ChronusSdkFacade;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
@@ -9,6 +9,7 @@ import org.apache.dubbo.spring.boot.autoconfigure.DubboAutoConfiguration;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,6 +20,7 @@ import org.springframework.context.annotation.Configuration;
  * @date 2019/11/04
  */
 @Configuration
+@ConditionalOnClass(DubboAutoConfiguration.class)
 @AutoConfigureAfter(DubboAutoConfiguration.class)
 public class ChronusAutoConfiguration {
 
@@ -33,14 +35,14 @@ public class ChronusAutoConfiguration {
 
     @Bean
     @ConditionalOnBean({ApplicationConfig.class, RegistryConfig.class})
-    public ChronusSdkProcessor chronusSdkFacade() {
-        ChronusSdkProcessor chronusClientFacade = new AbstractSdkService(){};
-        ServiceConfig<ChronusSdkProcessor> serviceConfig = new ServiceConfig<>();
+    public ChronusSdkFacade chronusSdkFacade() {
+        ChronusSdkFacade chronusClientFacade = new AbstractSdkService(){};
+        ServiceConfig<ChronusSdkFacade> serviceConfig = new ServiceConfig<>();
         serviceConfig.setApplication(applicationConfig);
         serviceConfig.setRegistry(registryConfig);
-        serviceConfig.setInterface(ChronusSdkProcessor.class);
+        serviceConfig.setInterface(ChronusSdkFacade.class);
         serviceConfig.setRef(chronusClientFacade);
-        serviceConfig.setPath("/" + applicationConfig.getName() + "/" + ChronusSdkProcessor.class.getName());
+        serviceConfig.setPath("/" + applicationConfig.getName() + "/" + ChronusSdkFacade.class.getName());
         //serviceConfig.setGroup(applicationConfig.getName());
         serviceConfig.export();
         return chronusClientFacade;

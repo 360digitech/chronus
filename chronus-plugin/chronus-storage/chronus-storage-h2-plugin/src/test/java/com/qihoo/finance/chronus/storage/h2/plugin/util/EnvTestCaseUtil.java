@@ -12,6 +12,7 @@ import java.sql.Timestamp;
 public class EnvTestCaseUtil {
     public static ClusterH2Entity buildEnvH2One() {
         ClusterH2Entity envEntity = new ClusterH2Entity();
+        envEntity.setId(H2IdUtil.getId());
         envEntity.setCluster("A");
         envEntity.setClusterDesc("testA");
         envEntity.setCreatedBy("sys");

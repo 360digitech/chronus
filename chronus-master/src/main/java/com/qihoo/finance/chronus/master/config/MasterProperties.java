@@ -30,4 +30,10 @@ public class MasterProperties {
      * 固定延迟时间 单位秒
      */
     private long taskAssignTimerTaskDelay = 5;
+
+    /**
+     * 按tag分组 ，每个tag 一个master
+     * 如果是true 需要每个tag组所在的节点集群有开启master角色的节点
+     */
+    private boolean masterGroupByTag = false;
 }

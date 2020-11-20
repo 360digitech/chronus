@@ -11,17 +11,20 @@ import java.util.Map;
  */
 public interface SystemGroupDao {
 
-    void insert(SystemGroupEntity systemGroupEntity);
+	void insert(SystemGroupEntity systemGroupEntity);
 
-    void update(SystemGroupEntity systemGroupEntity);
+	void update(SystemGroupEntity systemGroupEntity);
 
-    void delete(Object id);
+	void delete(Object id);
 
-    SystemGroupEntity selectByGroupName(String groupName, String sysCode);
+	SystemGroupEntity selectByGroupName(String groupName, String sysCode);
 
-    List<SystemGroupEntity> selectListAll();
+	List<SystemGroupEntity> selectListAll();
 
-    SystemGroupEntity loadSystemGroupBySysCode(String sysCode);
+	SystemGroupEntity loadSystemGroupBySysCode(String sysCode);
 
-    PageResult<SystemGroupEntity> findAllByPage(Integer page, Integer limit, Map<String, String> param);
+	PageResult<SystemGroupEntity> findAllByPage(Integer page, Integer limit, Map<String, String> param);
+
+	List<SystemGroupEntity> selectSystemByGroupName(List<String> groupNames);
+
 }

@@ -3,8 +3,8 @@ package com.qihoo.finance.chronus.metadata.api.task.dao;
 import com.qihoo.finance.chronus.metadata.api.common.PageResult;
 import com.qihoo.finance.chronus.metadata.api.task.entity.TaskEntity;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by xiongpu on 2019/9/13.
@@ -18,13 +18,17 @@ public interface TaskDao {
 
     TaskEntity selectById(String id);
 
-    TaskEntity selectTaskInfoByTaskName(String cluster, String taskName);
+    TaskEntity selectTaskInfoByTaskName(String taskName);
 
-    List<TaskEntity> selectListAll();
-
-    PageResult<TaskEntity> selectListByPage(Integer page, Integer limit, Map<String, String> param);
+    PageResult<TaskEntity> selectListByPage(TaskEntity taskEntity, List<String> dealSysCodes);
 
     List<TaskEntity> selectTaskInfoByCluster(String cluster);
 
+    List<TaskEntity> selectAllTaskInfo();
+
+    List<TaskEntity> selectTaskInfoByTaskNames(Collection<String> taskNameSet);
+
     List<TaskEntity> selectTaskInfoByTag(String tag);
+
+    List<TaskEntity> selectTaskInfoBySysCode(String dealSysCode);
 }

@@ -14,23 +14,25 @@ public class ChronusConstants {
     public static final String DATA_VERSION = "dataVersion";
     public static final String IS_MASTER = "isMaster";
     public static final String ENABLE_MASTER = "enableMaster";
-    public static final String ENABLE_EXECUTOR = "enableExecutor";
+    public static final String ENABLE_WORKER = "enableWorker";
     public static final String STATE = "state";
     public static final String ADDRESS = "address";
     public static final String TAG = "tag";
     public static final String HOST_NAME = "hostName";
     public static final String NODE_NAME_CHRONUS = "chronus";
 
-    public static String STS_PAUSE = "pause";
-    public static String STS_NORMAL = "normal";
+    public static final String GLOBAL_REGISTRY_ADDRESS = "globalRegistryAddress";
+    public static final String GLOBAL_SERVICE_URL = "globalServiceUrl";
+    public static final String CHRONUS_SDK_FACADE_FACTORY = "chronusSdkFacadeFactory";
+    public static final String DEFAULT_SDK_FACTORY = "DUBBO";
 
-    public static final String CFG_LOG_NAME = "TaskCfgLogger";
-    public static final String CFG_MONITOR_LOG_NAME = "TaskCfgMonitorLogger";
-    public static final String LOG_FILE_NAME_KEY = "task-log-factory";
-    public static final String APPENDER_NAME_KEY = "TaskCfg";
-    public static final String MONITOR_LOGGER_PATTERN_EXECUTE = "{}|{}-{}|{}|{}|execute|{}|{}ms";
-    public static final String MONITOR_LOGGER_PATTERN_SELECT_TASKS = "{}|{}-{}|{}|{}|selectTasks|{}|{}|{}ms";
+    public static final String MONITOR_LOGGER_PATTERN = "{}|{}-{}|{}|{}|{}ms";
     public static final String DATE_FORMAT_YYYYMMDDHHMMSS = "yyyy-MM-dd HH:mm:ss";
 
-    public static final int MILLISECOND_2_SECOND=1000;
+    public static final String ADMIN = "admin";
+    public static final String GUEST = "guest";
+    public static final String ALL = "ALL";
+    public static final String PUBLIC = "PUBLIC";
+
+    public static final int MILLISECOND_2_SECOND = 1000;
 }

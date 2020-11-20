@@ -24,20 +24,29 @@ public class SystemGroupEntity extends Entity {
      * 分组名称
      */
     @NotBlank
-    private String groupName = "PUBLIC";
+    private String groupName;
+
     @NotBlank
     private String sysCode;
-    @NotBlank
-    private String groupDesc;
+
     @NotBlank
     private String sysDesc;
+
+    /**
+     * 调用系统协议通道
+     * DUBBO,HTTP
+     */
+    @NotBlank
+    private String protocolType;
+
+    @NotBlank
+    private String protocolConfig;
 
     /* 非db字段 */
     @Transient
     private Integer pageSize;
     @Transient
     private Integer pageNum;
-
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date dateCreated;

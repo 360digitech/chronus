@@ -1,7 +1,6 @@
 package com.qihoo.finance.chronus.storage.mongodb.plugin.dao.impl;
 
 import com.qihoo.finance.chronus.metadata.api.common.PageResult;
-import com.qihoo.finance.chronus.metadata.api.common.TableConstant;
 import com.qihoo.finance.chronus.metadata.api.tag.dao.TagDao;
 import com.qihoo.finance.chronus.metadata.api.tag.entity.TagEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +21,8 @@ import java.util.Set;
 @Slf4j
 public class TagMongoDBDaoImpl extends AbstractMongoBaseDao<TagEntity> implements TagDao {
 
-    public TagMongoDBDaoImpl(@Autowired MongoTemplate mongoTemplate) {
-        super(mongoTemplate, TableConstant.TAG_INFO);
+    public TagMongoDBDaoImpl(String collectionName, @Autowired MongoTemplate mongoTemplate) {
+        super(mongoTemplate, collectionName);
     }
 
     @Override
@@ -46,7 +45,6 @@ public class TagMongoDBDaoImpl extends AbstractMongoBaseDao<TagEntity> implement
     @Override
     public void update(TagEntity tagEntity) {
         Update update = new Update();
-        update.set("executorNum", tagEntity.getExecutorNum());
         update.set("remark", tagEntity.getRemark());
         update.set("dateUpdated", new Date());
         update.set("updatedBy", tagEntity.getUpdatedBy());
@@ -58,13 +56,6 @@ public class TagMongoDBDaoImpl extends AbstractMongoBaseDao<TagEntity> implement
         Query query = new Query();
         query.addCriteria(Criteria.where("tag").is(tag));
         return super.selectOne(query);
-    }
-
-    @Override
-    public List<TagEntity> selectListByNames(Set<String> allTags) {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("tag").in(allTags));
-        return super.selectList(query);
     }
 
     @Override

@@ -1,12 +1,13 @@
 package com.qihoo.finance.chronus.master.config;
 
 import com.qihoo.finance.chronus.master.service.TaskAssignService;
-import com.qihoo.finance.chronus.master.service.impl.TaskAssignServiceImpl;
 import com.qihoo.finance.chronus.support.MasterSupport;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.Order;
 
 /**
@@ -24,9 +25,10 @@ public class MasterConfiguration {
         return masterSupport;
     }
 
-    @Bean
+    @Bean(name = "taskAssignService")
+    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public TaskAssignService taskAssignService() {
-        TaskAssignService taskAssignService = new TaskAssignServiceImpl();
+        TaskAssignService taskAssignService = new TaskAssignService();
         return taskAssignService;
     }
 }

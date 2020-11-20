@@ -11,7 +11,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>chronus-dubbo-demo</module>
-        <!--<module>chronus-http-demo</module>-->
+        <module>chronus-http-demo</module>
     </modules>
     <artifactId>chronus-demo</artifactId>
 

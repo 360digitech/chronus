@@ -1,14 +1,7 @@
 package com.qihoo.finance.chronus.storage.h2.plugin.dao.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.qihoo.finance.chronus.metadata.api.cluster.dao.ClusterDao;
-import com.qihoo.finance.chronus.metadata.api.cluster.entity.ClusterEntity;
-import com.qihoo.finance.chronus.storage.h2.plugin.TestApplication;
-import com.qihoo.finance.chronus.storage.h2.plugin.entity.ClusterH2Entity;
-import com.qihoo.finance.chronus.storage.h2.plugin.repository.ClusterJpaRepository;
-import com.qihoo.finance.chronus.storage.h2.plugin.util.EnvTestCaseUtil;
-import com.qihoo.finance.chronus.storage.h2.plugin.util.TestCaseUtil;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,7 +11,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.List;
+import com.alibaba.fastjson.JSON;
+import com.qihoo.finance.chronus.metadata.api.cluster.dao.ClusterDao;
+import com.qihoo.finance.chronus.metadata.api.cluster.entity.ClusterEntity;
+import com.qihoo.finance.chronus.storage.h2.plugin.TestApplication;
+import com.qihoo.finance.chronus.storage.h2.plugin.entity.ClusterH2Entity;
+import com.qihoo.finance.chronus.storage.h2.plugin.repository.ClusterJpaRepository;
+import com.qihoo.finance.chronus.storage.h2.plugin.util.EnvTestCaseUtil;
+import com.qihoo.finance.chronus.storage.h2.plugin.util.TestCaseUtil;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author zhangsi-pc.
@@ -53,7 +55,7 @@ public class ClusterH2DaoImplTest {
         ClusterEntity envEntity = new ClusterEntity();
         envEntity.setId(String.valueOf(envH2Entity.getId()));
         envEntity.setClusterDesc("update desc");
-        clusterDao.updateDesc(envEntity);
+        clusterDao.update(envEntity);
 
         List<ClusterEntity> envEntities = clusterDao.selectListAll();
         Assert.assertNotNull(envEntities);

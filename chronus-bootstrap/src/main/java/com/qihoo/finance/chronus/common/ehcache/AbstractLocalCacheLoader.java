@@ -1,6 +1,5 @@
 package com.qihoo.finance.chronus.common.ehcache;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -18,17 +17,19 @@ public abstract class AbstractLocalCacheLoader implements ApplicationListener<Co
     protected String switchA = "";
     protected String switchB = "";
     protected String current = "";
-    @Autowired
-    protected Ehcache ehcache;
+    protected ChronusEhcache chronusEhcache;
 
-    public AbstractLocalCacheLoader() {
+    public AbstractLocalCacheLoader(ChronusEhcache chronusEhcache) {
+        this.chronusEhcache = chronusEhcache;
         switchA = getCacheName() + "_A";
         switchB = getCacheName() + "_B";
         current = switchA;
+
     }
 
     /**
      * 自定义缓存定制，初始化数据
+     *
      * @return 缓存字典
      */
     public abstract Map<String, Object> init();
@@ -59,7 +60,7 @@ public abstract class AbstractLocalCacheLoader implements ApplicationListener<Co
         //缓存切换
         current = switchA;
         //老缓存清理
-        Cache cache = ehcache.getCache(switchB);
+        Cache cache = chronusEhcache.getCache(switchB);
         if (cache != null) {
             cache.clear();
         }
@@ -72,7 +73,7 @@ public abstract class AbstractLocalCacheLoader implements ApplicationListener<Co
      * @param value
      */
     protected void put(String key, Object value) {
-        ehcache.put(switchA, key, value);
+        chronusEhcache.put(switchA, key, value);
     }
 
     /**
@@ -82,7 +83,7 @@ public abstract class AbstractLocalCacheLoader implements ApplicationListener<Co
      * @return
      */
     public <T> T get(String key) {
-        return (T) ehcache.get(current, key);
+        return (T) chronusEhcache.get(current, key);
     }
 
     /**

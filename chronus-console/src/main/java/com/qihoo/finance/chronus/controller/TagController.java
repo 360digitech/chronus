@@ -3,17 +3,16 @@ package com.qihoo.finance.chronus.controller;
 import com.qihoo.finance.chronus.common.domain.Response;
 import com.qihoo.finance.chronus.common.util.ControllerUtil;
 import com.qihoo.finance.chronus.common.util.DateUtils;
-import com.qihoo.finance.chronus.core.tag.service.TagService;
+import com.qihoo.finance.chronus.common.util.SecureUtils;
+import com.qihoo.finance.chronus.core.tag.TagService;
 import com.qihoo.finance.chronus.metadata.api.common.PageResult;
 import com.qihoo.finance.chronus.metadata.api.tag.entity.TagEntity;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.SecurityUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,9 +36,9 @@ public class TagController {
             if (ControllerUtil.checkResponse(response, bindingResult).failed()) {
                 return response;
             }
-            String userName = (String) SecurityUtils.getSubject().getPrincipal();
-            tagEntity.setCreatedBy(userName);
-            tagEntity.setUpdatedBy(userName);
+            String user = (String)SecureUtils.getPrincipal();
+            tagEntity.setCreatedBy(user);
+            tagEntity.setUpdatedBy(user);
             tagService.insert(tagEntity);
         } catch (Exception e) {
             log.error("新增Tag配置异常! tagEntity:{}", tagEntity, e);
@@ -70,8 +69,8 @@ public class TagController {
             if (tagEntity == null || tagEntity.getId() == null) {
                 return response.hinderFail("Tag.id为空,无法更新!");
             }
-            String userName = (String) SecurityUtils.getSubject().getPrincipal();
-            tagEntity.setUpdatedBy(userName);
+            String user = (String)SecureUtils.getPrincipal();
+            tagEntity.setUpdatedBy(user);
             tagEntity.setDateUpdated(DateUtils.now());
             tagService.update(tagEntity);
         } catch (Exception e) {

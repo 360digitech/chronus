@@ -1,3 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.qihoo.finance.chronus.executor.config.ExecutorConfiguration,\
-com.qihoo.finance.chronus.executor.config.DubboConfiguration

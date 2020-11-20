@@ -19,7 +19,7 @@ import org.springframework.util.Assert;
  * @date 2013-5-29 下午1:25:40
  */
 @Slf4j
-@Component
+@Component("applicationContextHolder")
 @Lazy(false)
 public class SpringContextHolder implements ApplicationContextAware, DisposableBean {
 
@@ -60,6 +60,11 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
     public static <T> T getBean(String name) {
         assertContextInjected();
         return (T) applicationContext.getBean(name);
+    }
+
+    public static boolean containsBean(String name) {
+        assertContextInjected();
+        return applicationContext.containsBean(name);
     }
 
     /**

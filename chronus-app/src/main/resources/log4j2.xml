@@ -2,11 +2,12 @@
 <configuration status="WARN" shutdownHook="disable">
     <Properties>
         <Property name="sysName">chronus-app</Property>
-        <Property name="bizLogLevel">${env.log4j2.biz.level}</Property>
-        <Property name="otherLogLevel">${env.log4j2.other.level}</Property>
-        <Property name="logFilePath">${env.log4j2.log.path}</Property>
+        <Property name="bizLogLevel">DEBUG</Property>
+        <Property name="otherLogLevel">DEBUG</Property>
+        <Property name="logFilePath">./logs</Property>
         <Property name="errorLogFile">${sysName}_err</Property>
         <Property name="bizLogFile">${sysName}_biz</Property>
+        <Property name="nodeLogFile">${sysName}_node</Property>
         <Property name="allLogFile">${sysName}_all</Property>
         <Property name="monitorLogFile">${sysName}_monitor</Property>
         <Property name="ioLogFile">${sysName}_io</Property>
@@ -15,14 +16,15 @@
     </Properties>
     <appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <ThresholdFilter level="${env.log4j2.biz.level}" onMatch="ACCEPT" onMismatch="DENY"/>
+            <ThresholdFilter level="${bizLogLevel}" onMatch="ACCEPT" onMismatch="DENY"/>
             <PatternLayout charset="UTF-8"
                            pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] [%X{requestNo}|%X{consumerIp}|%X{sysCode}] [%c:%line] - %msg%n"/>
         </Console>
 
-        <RollingFile name="TaskCfgErrorRollingFile" fileName="${logFilePath}/task-log-factory_err.log"
-                     filePattern="${logFilePath}/$${date:yyyy-MM}/task-log-factory_err-%d{MM-dd-yyyy}-%i.log.gz">
-            <PatternLayout charset="UTF-8" pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] [%X{requestNo}|%X{sysCode}|%X{beanName}] [%c:%line] - %msg%n"/>
+        <RollingFile name="ErrorRollingFile" fileName="${logFilePath}/${errorLogFile}.log"
+                     filePattern="${logFilePath}/$${date:yyyy-MM}/${errorLogFile}-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout charset="UTF-8"
+                           pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] [%X{requestNo}|%X{consumerIp}] [%c:%line] - %msg%n"/>
             <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
             <Policies>
                 <TimeBasedTriggeringPolicy/>
@@ -30,34 +32,14 @@
             </Policies>
             <DefaultRolloverStrategy max="${maxFile}"/>
         </RollingFile>
-        <RollingFile name="TaskCfgBizRollingFile" fileName="${logFilePath}/task-log-factory_biz.log"
-                     filePattern="${logFilePath}/$${date:yyyy-MM}/task-log-factory_biz-%d{MM-dd-yyyy}-%i.log.gz">
-            <PatternLayout charset="UTF-8"  pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] [%X{requestNo}|%X{sysCode}|%X{beanName}] [%c:%line] - %msg%n"/>
+        <RollingFile name="NodeRollingFile" fileName="${logFilePath}/${nodeLogFile}.log"
+                     filePattern="${logFilePath}/$${date:yyyy-MM}/${nodeLogFile}-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout charset="UTF-8"
+                           pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] [%X{requestNo}|%X{consumerIp}] [%c:%line] - %msg%n"/>
             <Filters>
                 <ThresholdFilter level="${bizLogLevel}"/>
                 <ThresholdFilter level="ERROR" onMatch="DENY" onMismatch="NEUTRAL"/>
             </Filters>
-            <Policies>
-                <TimeBasedTriggeringPolicy/>
-                <SizeBasedTriggeringPolicy size="${logSize}"/>
-            </Policies>
-            <DefaultRolloverStrategy max="${maxFile}"/>
-        </RollingFile>
-
-        <RollingFile name="TaskCfgMonitorRollingFile" fileName="${logFilePath}/task-log-factory_monitor.log"
-                     filePattern="${logFilePath}/$${date:yyyy-MM}/task-log-factory_monitor-%d{MM-dd-yyyy}-%i.log.gz">
-            <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss.SSS}|%-5level|%msg%n"/>
-            <Policies>
-                <TimeBasedTriggeringPolicy/>
-                <SizeBasedTriggeringPolicy size="${logSize}"/>
-            </Policies>
-            <DefaultRolloverStrategy max="${maxFile}"/>
-        </RollingFile>
-
-        <RollingFile name="ErrorRollingFile" fileName="${logFilePath}/${errorLogFile}.log"
-                     filePattern="${logFilePath}/$${date:yyyy-MM}/${errorLogFile}-%d{MM-dd-yyyy}-%i.log.gz">
-            <PatternLayout charset="UTF-8" pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] [%X{requestNo}|%X{consumerIp}] [%c:%line] - %msg%n"/>
-            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
             <Policies>
                 <TimeBasedTriggeringPolicy/>
                 <SizeBasedTriggeringPolicy size="${logSize}"/>
@@ -114,13 +96,28 @@
         </RollingFile>
     </appenders>
     <loggers>
-        <logger name="net.sf.ehcache.store.disk.Segment" level="INFO" additivity="false">
+        <logger name="net.sf.ehcache.store.disk.Segment" level="${bizLogLevel}" additivity="false">
             <appender-ref ref="AllRollingFile"/>
-            <appender-ref ref="Console"/>
+        </logger>
+        <logger name="org.apache.zookeeper.ClientCnxn" level="${bizLogLevel}" additivity="false">
+            <appender-ref ref="AllRollingFile"/>
+        </logger>
+        <logger name="org.mongodb.driver" level="${bizLogLevel}" additivity="false">
+            <appender-ref ref="AllRollingFile"/>
         </logger>
         <logger name="com.qihoo.finance.chronus" level="${bizLogLevel}" additivity="false">
-            <appender-ref ref="ErrorRollingFile" />
+            <appender-ref ref="ErrorRollingFile"/>
             <appender-ref ref="BizRollingFile"/>
+            <appender-ref ref="Console"/>
+        </logger>
+        <logger name="com.qihoo.finance.chronus.master" level="${bizLogLevel}" additivity="false">
+            <appender-ref ref="ErrorRollingFile"/>
+            <appender-ref ref="NodeRollingFile"/>
+            <appender-ref ref="Console"/>
+        </logger>
+        <logger name="com.qihoo.finance.chronus.worker" level="${bizLogLevel}" additivity="false">
+            <appender-ref ref="ErrorRollingFile"/>
+            <appender-ref ref="NodeRollingFile"/>
             <appender-ref ref="Console"/>
         </logger>
         <root level="${otherLogLevel}">

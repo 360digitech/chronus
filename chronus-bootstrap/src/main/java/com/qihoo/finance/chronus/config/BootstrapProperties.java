@@ -15,4 +15,6 @@ public class BootstrapProperties {
      * config cluster key default "IDC"
      */
     private String clusterKey = "IDC";
+
+    private String tagKey = "TAG";
 }

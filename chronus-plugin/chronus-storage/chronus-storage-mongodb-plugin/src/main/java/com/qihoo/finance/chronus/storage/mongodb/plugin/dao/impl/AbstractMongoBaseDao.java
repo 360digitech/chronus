@@ -57,7 +57,7 @@ public abstract class AbstractMongoBaseDao<T extends Entity> {
     }
 
     protected void insert(T entity) {
-        mongotemplate.insert(entity,collectionName);
+        mongotemplate.insert(entity, collectionName);
     }
 
     protected void insert(Collection<T> entityList) {
@@ -95,8 +95,8 @@ public abstract class AbstractMongoBaseDao<T extends Entity> {
         this.updateFirst(query, update);
     }
 
-    protected void updateFirst(Query query, Update update) {
-        mongotemplate.updateFirst(query, update, entityClass, collectionName);
+    protected boolean updateFirst(Query query, Update update) {
+       return mongotemplate.updateFirst(query, update, entityClass, collectionName).getModifiedCount() > 0;
     }
 
     protected void updateMulti(Query query, Update update) {
@@ -116,21 +116,25 @@ public abstract class AbstractMongoBaseDao<T extends Entity> {
         return count;
     }
 
-    protected  PageResult<T> findAllByPage(Integer page, Integer limit, Map<String, String> requestParams) {
+    protected PageResult<T> findAllByPage(Integer page, Integer limit, Map<String, String> requestParams) {
         page = page - 1;
         PageQueryParams pageQueryParams = new PageQueryParams(page, limit);
         Map<String, String> params = new HashMap<>(8);
         params.putAll(requestParams);
         Query query = getWhereParamsByRequest(params);
-        Long count = this.countByQuery(query);
+        return generatePageResult(this.countByQuery(query), limit, page, this.selectByQuery(query, pageQueryParams));
+    }
 
+
+    protected PageResult<T> generatePageResult(Long count, Integer pageSize, Integer pageNum, List<T> list) {
         final PageResult<T> pageResult = new PageResult<>();
         pageResult.setTotal(count);
-        pageResult.setPageSize(limit);
-        pageResult.setPageNum(page);
-        pageResult.setList(this.selectByQuery(query, pageQueryParams));
+        pageResult.setPageSize(pageSize);
+        pageResult.setPageNum(pageNum);
+        pageResult.setList(list);
         return pageResult;
     }
+
 
     protected Query getWhereParamsByRequest(Map<String, String> queryParams) {
         Query query = new Query();

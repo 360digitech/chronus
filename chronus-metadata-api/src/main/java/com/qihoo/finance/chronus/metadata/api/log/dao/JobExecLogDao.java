@@ -11,11 +11,10 @@ import java.util.List;
 public interface JobExecLogDao {
     void batchInsert(List<JobExecLogEntity> jobExecLogEntityList);
 
-    List<JobExecLogEntity> selectListAll();
-
     List<JobExecLogEntity> selectListByCluster(String cluster, String taskName, String sysCode);
 
-    PageResult<JobExecLogEntity> findAllByPage(JobExecLogEntity jobExecLogEntity);
+    PageResult<JobExecLogEntity> findAllByPage(JobExecLogEntity jobExecLogEntity,List<String> sysCodes);
 
+    void delete(String taskName);
 
 }

@@ -9,9 +9,6 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>chronus-console</artifactId>
-    <properties>
-        <skip_maven_deploy>true</skip_maven_deploy>
-    </properties>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
@@ -24,20 +21,28 @@
             <artifactId>chronus-registry-zookeeper</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.qihoo.finance.chronus</groupId>
+            <artifactId>chronus-registry-nacos</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.shiro</groupId>
             <artifactId>shiro-spring-boot-web-starter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.ldap</groupId>
+            <artifactId>spring-ldap-core</artifactId>
+        </dependency>
     </dependencies>
-
 
     <build>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.1.8.RELEASE</version>
+                <version>${spring_boot_maven_plugin_version}</version>
                 <executions>
                     <execution>
                         <id>repackage</id>
@@ -47,69 +52,6 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
-        <filters>
-            <filter>src/main/resources/env/${env}.properties</filter>
-        </filters>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>**/*.xml</include>
-                    <include>**/*.properties</include>
-                </includes>
-                <excludes>
-                    <exclude>env/**</exclude>
-                </excludes>
-                <filtering>true</filtering>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>**/*.*</include>
-                </includes>
-                <excludes>
-                    <exclude>env/**</exclude>
-                    <exclude>**/*.xml</exclude>
-                    <exclude>**/*.properties</exclude>
-                </excludes>
-                <filtering>false</filtering>
-            </resource>
-        </resources>
     </build>
-
-    <profiles>
-        <profile>
-            <id>dev</id>
-            <properties>
-                <env>dev</env>
-                <plugin.assembly.phase>none</plugin.assembly.phase>
-            </properties>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-        </profile>
-        <profile>
-            <id>ci</id>
-            <properties>
-                <env>ci</env>
-                <plugin.assembly.phase>package</plugin.assembly.phase>
-            </properties>
-        </profile>
-        <profile>
-            <id>st</id>
-            <properties>
-                <env>st</env>
-                <plugin.assembly.phase>package</plugin.assembly.phase>
-            </properties>
-        </profile>
-        <profile>
-            <id>prd</id>
-            <properties>
-                <env>prd</env>
-                <plugin.assembly.phase>package</plugin.assembly.phase>
-            </properties>
-        </profile>
-    </profiles>
 </project>

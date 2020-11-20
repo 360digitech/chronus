@@ -1,18 +1,20 @@
 package com.qihoo.finance.chronus.storage.mongodb.plugin.dao.impl;
 
+import com.qihoo.finance.chronus.metadata.api.common.PageQueryParams;
 import com.qihoo.finance.chronus.metadata.api.common.PageResult;
-import com.qihoo.finance.chronus.metadata.api.common.TableConstant;
 import com.qihoo.finance.chronus.metadata.api.task.dao.TaskDao;
 import com.qihoo.finance.chronus.metadata.api.task.entity.TaskEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by xiongpu on 2019/8/10.
@@ -20,18 +22,21 @@ import java.util.Map;
 @Slf4j
 public class TaskMongoDBDaoImpl extends AbstractMongoBaseDao<TaskEntity> implements TaskDao {
 
-    public TaskMongoDBDaoImpl(@Autowired MongoTemplate mongoTemplate) {
-        super(mongoTemplate, TableConstant.TASK_INFO);
+    public TaskMongoDBDaoImpl(String collectionName, @Autowired MongoTemplate mongoTemplate) {
+        super(mongoTemplate, collectionName);
     }
 
     @Override
     public void insert(TaskEntity taskEntity) {
+        taskEntity.setId(null);
+        taskEntity.setDateCreated(new Date());
+        taskEntity.setDateUpdated(new Date());
         super.insert(taskEntity);
     }
 
-
     @Override
     public void update(TaskEntity taskEntity) {
+        taskEntity.setDateUpdated(new Date());
         super.insertOrUpdate(taskEntity);
     }
 
@@ -50,29 +55,57 @@ public class TaskMongoDBDaoImpl extends AbstractMongoBaseDao<TaskEntity> impleme
     }
 
     @Override
-    public TaskEntity selectTaskInfoByTaskName(String cluster, String taskName) {
+    public TaskEntity selectTaskInfoByTaskName(String taskName) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("cluster").is(cluster));
         query.addCriteria(Criteria.where("taskName").is(taskName));
         return selectOne(query);
     }
 
     @Override
-    public List<TaskEntity> selectListAll() {
-        return super.selectListAll();
-    }
-
-    @Override
-    public PageResult<TaskEntity> selectListByPage(Integer page, Integer limit, Map<String, String> param) {
-        return super.findAllByPage(page, limit, param);
+    public PageResult<TaskEntity> selectListByPage(TaskEntity taskEntity, List<String> dealSysCodes) {
+        Integer page = taskEntity.getPageNum() - 1;
+        Integer limit = taskEntity.getPageSize();
+        PageQueryParams pageQueryParams = new PageQueryParams(page, limit);
+        Query query = new Query();
+        query.addCriteria(dealSysCodes.contains(taskEntity.getDealSysCode())
+                ? Criteria.where("dealSysCode").is(taskEntity.getDealSysCode())
+                : Criteria.where("dealSysCode").in(dealSysCodes));
+        if (StringUtils.isNotEmpty(taskEntity.getTaskName())) {
+            query.addCriteria(Criteria.where("taskName").regex(".*?" + taskEntity.getTaskName() + ".*", "i"));
+        }
+        if (StringUtils.isNotEmpty(taskEntity.getState())) {
+            query.addCriteria(Criteria.where("state").is(taskEntity.getState()));
+        }
+        query.with(new Sort(Sort.Direction.DESC, "dateUpdated"));
+        return generatePageResult(super.countByQuery(query), limit, page, super.selectByQuery(query, pageQueryParams));
     }
 
 
     @Override
     public List<TaskEntity> selectTaskInfoByCluster(String cluster) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("cluster").is(cluster));
+        query.addCriteria(Criteria.where("cluster").in(cluster));
         query.with(new Sort(Sort.Direction.DESC, "dateUpdated"));
+        return selectList(query);
+    }
+
+
+    @Override
+    public List<TaskEntity> selectTaskInfoBySysCode(String dealSysCode) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("dealSysCode").in(dealSysCode));
+        return selectList(query);
+    }
+
+    @Override
+    public List<TaskEntity> selectAllTaskInfo() {
+        return selectListAll();
+    }
+
+    @Override
+    public List<TaskEntity> selectTaskInfoByTaskNames(Collection<String> taskNameSet) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("taskName").in(taskNameSet));
         return selectList(query);
     }
 

@@ -23,7 +23,7 @@ public final class ContextLog4j2Util {
             return;
         }
         ThreadContext.put(ContextConstKey.REQUEST_NO, StringUtils.isEmpty(context.getRequestNo()) ? "" : context.getRequestNo());
-        ThreadContext.put(ContextConstKey.SYS_CODE, StringUtils.isEmpty(context.getSysCode()) ? "" : context.getSysCode());
+        ThreadContext.put(ContextConstKey.SERVICE_NAME, StringUtils.isEmpty(context.getServiceName()) ? "" : context.getServiceName());
         ThreadContext.put(ContextConstKey.LOCAL_IP, NetUtils.getLocalIP());
         ThreadContext.put(ContextConstKey.BEAN_NAME, StringUtils.isEmpty(context.getBeanName()) ? "" : context.getBeanName());
     }
@@ -33,7 +33,7 @@ public final class ContextLog4j2Util {
             log.warn("上下文未处理化，context is null");
         } else {
             ThreadContext.put(ContextConstKey.REQUEST_NO, StringUtils.isEmpty(context.getRequestNo()) ? "" : context.getRequestNo());
-            ThreadContext.put(ContextConstKey.SYS_CODE, StringUtils.isEmpty(context.getSysCode()) ? "" : context.getSysCode());
+            ThreadContext.put(ContextConstKey.SERVICE_NAME, StringUtils.isEmpty(context.getServiceName()) ? "" : context.getServiceName());
             ThreadContext.put(ContextConstKey.LOCAL_IP, NetUtils.getLocalIP());
             ThreadContext.put(ContextConstKey.BEAN_NAME, StringUtils.isEmpty(context.getBeanName()) ? "" : context.getBeanName());
         }

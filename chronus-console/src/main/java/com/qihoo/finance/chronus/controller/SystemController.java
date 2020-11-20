@@ -1,19 +1,26 @@
 package com.qihoo.finance.chronus.controller;
 
+import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Ordering;
+import com.qihoo.finance.chronus.common.ChronusConstants;
 import com.qihoo.finance.chronus.common.domain.Response;
+import com.qihoo.finance.chronus.common.spi.UserService;
 import com.qihoo.finance.chronus.common.util.ControllerUtil;
-import com.qihoo.finance.chronus.core.system.service.SystemGroupService;
+import com.qihoo.finance.chronus.common.util.SecureUtils;
+import com.qihoo.finance.chronus.core.system.SystemGroupService;
 import com.qihoo.finance.chronus.metadata.api.common.PageResult;
 import com.qihoo.finance.chronus.metadata.api.system.entity.SystemGroupEntity;
+import com.qihoo.finance.chronus.metadata.api.user.entity.UserEntity;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.SecurityUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.Date;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -27,6 +34,9 @@ public class SystemController {
     @Resource
     private SystemGroupService systemGroupService;
 
+    @Resource
+    private UserService userService;
+
     @RequestMapping(value = "/", method = RequestMethod.POST)
     @ResponseBody
     public Response insert(@RequestBody @Valid SystemGroupEntity systemGroupEntity, BindingResult bindingResult) throws Exception {
@@ -34,9 +44,9 @@ public class SystemController {
         if (ControllerUtil.checkResponse(response, bindingResult).failed()) {
             return response;
         }
-        String userName = (String) SecurityUtils.getSubject().getPrincipal();
-        systemGroupEntity.setCreatedBy(userName);
-        systemGroupEntity.setUpdatedBy(userName);
+        String user = (String) SecureUtils.getPrincipal();
+        systemGroupEntity.setCreatedBy(user);
+        systemGroupEntity.setUpdatedBy(user);
         systemGroupService.insert(systemGroupEntity);
         return response;
     }
@@ -62,8 +72,8 @@ public class SystemController {
             if (systemGroupEntity == null || systemGroupEntity.getId() == null) {
                 return response.hinderFail("systemGroupEntity.id为空,无法更新!");
             }
-            String userName = (String) SecurityUtils.getSubject().getPrincipal();
-            systemGroupEntity.setUpdatedBy(userName);
+            String user = (String) SecureUtils.getPrincipal();
+            systemGroupEntity.setUpdatedBy(user);
             systemGroupEntity.setDateUpdated(new Date());
             systemGroupService.update(systemGroupEntity);
         } catch (Exception e) {
@@ -78,10 +88,25 @@ public class SystemController {
     @ResponseBody
     public Response loadAllSysCodes() throws Exception {
         Response response = new Response().success();
-        Set<String> allSysCodes = systemGroupService.loadAllSysCodes();
+        String userNo = (String) SecureUtils.getPrincipal();
+        UserEntity user = userService.findByUserNo(userNo);
+        Set<String> t;
+        if (StringUtils.equals(ChronusConstants.ALL, user.getGroup())) {
+            t = systemGroupService.loadAllSysCodes();
+        } else {
+            List<String> list = new ArrayList<>(Arrays.asList(user.getGroup().split(",")));
+            list.add("PUBLIC");
+            t = systemGroupService.loadSystemGroupByGroupName(list).stream().map(s -> s.getSysCode()).collect(Collectors.toSet());
+        }
+        Set<String> allSysCodes = new TreeSet<>(Comparator.naturalOrder());
+        if (CollectionUtils.isNotEmpty(t)) {
+            allSysCodes.addAll(t);
+        }
         response.setData(allSysCodes);
         return response;
     }
+
+
     @RequestMapping(value = "/getAllGroup", method = RequestMethod.POST)
     @ResponseBody
     public Response getAllGroup(@RequestBody SystemGroupEntity systemGroupEntity) throws Exception {

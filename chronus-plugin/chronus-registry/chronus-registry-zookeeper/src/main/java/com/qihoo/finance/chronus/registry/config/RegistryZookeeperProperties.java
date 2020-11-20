@@ -18,5 +18,4 @@ public class RegistryZookeeperProperties {
     private String password;
     private int sessionTimeout = 60000;
     private int connectionTimeout = 60000;
-    private boolean checkParentPath = true;
 }

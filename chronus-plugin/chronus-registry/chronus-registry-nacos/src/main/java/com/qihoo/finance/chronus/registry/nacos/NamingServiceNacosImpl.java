@@ -5,8 +5,6 @@ import com.alibaba.nacos.api.naming.NamingMaintainService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.qihoo.finance.chronus.common.ChronusConstants;
 import com.qihoo.finance.chronus.common.NodeInfo;
-import com.qihoo.finance.chronus.core.event.annotation.Event;
-import com.qihoo.finance.chronus.core.event.enums.EventEnum;
 import com.qihoo.finance.chronus.metadata.api.common.enums.NodeStateEnum;
 import com.qihoo.finance.chronus.registry.api.NamingService;
 import com.qihoo.finance.chronus.registry.api.Node;
@@ -52,8 +50,8 @@ public class NamingServiceNacosImpl implements NamingService {
             metadata.put(ChronusConstants.IS_MASTER, ChronusConstants.N);
         }
         metadata.put(ChronusConstants.ENABLE_MASTER, currentNode.getEnableMaster());
-        metadata.put(ChronusConstants.ENABLE_EXECUTOR, currentNode.getEnableExecutor());
-        metadata.put(ChronusConstants.TAG, ChronusConstants.DEF_TAG);
+        metadata.put(ChronusConstants.ENABLE_WORKER, currentNode.getEnableWorker());
+        metadata.put(ChronusConstants.TAG, currentNode.getTag());
         metadata.put(ChronusConstants.DATA_VERSION, currentNode.getVersion());
         instance.setMetadata(metadata);
         nacosNamingService.registerInstance(ChronusConstants.NODE_NAME_CHRONUS, instance);
@@ -76,59 +74,21 @@ public class NamingServiceNacosImpl implements NamingService {
         return instance != null ? convertNode(instance) : null;
     }
 
+    /**
+     * 获取当前集群的所有Worker节点
+     * @return
+     * @throws Exception
+     */
     @Override
-    public boolean isMaster() throws Exception {
-        return Objects.equals(currentNode.getAddress(), getCurrentMasterNodeAddress());
-    }
-
-    @Override
-    public boolean isActiveMaster() throws Exception {
-        return getCurrentMasterNodeAddress() != null;
-    }
-
-    @Override
-    @Event(EventEnum.MASTER_ELECTED)
-    public void nodeElectedMaster(String masterNodeAddress) throws Exception {
-        List<String> clusters = new ArrayList<>(1);
-        clusters.add(currentNode.getCluster());
-        List<Instance> instanceList = nacosNamingService.getAllInstances(ChronusConstants.NODE_NAME_CHRONUS, clusters);
-        for (Instance instance : instanceList) {
-            if (!masterNodeAddress.equals(InstanceUtils.getAddressByInstance(instance))) {
-                instance.getMetadata().put(ChronusConstants.IS_MASTER, ChronusConstants.N);
-                namingMaintainService.updateInstance(ChronusConstants.NODE_NAME_CHRONUS, instance);
-            }
-        }
-        for (Instance instance : instanceList) {
-            if (masterNodeAddress.equals(InstanceUtils.getAddressByInstance(instance))) {
-                instance.getMetadata().put(ChronusConstants.IS_MASTER, ChronusConstants.Y);
-                namingMaintainService.updateInstance(ChronusConstants.NODE_NAME_CHRONUS, instance);
-                break;
-            }
-        }
-    }
-
-    @Override
-    public String getCurrentMasterNodeAddress() throws Exception {
-        List<String> clusters = new ArrayList<>(1);
-        clusters.add(currentNode.getCluster());
-        List<Instance> instanceList = nacosNamingService.getAllInstances(ChronusConstants.NODE_NAME_CHRONUS, clusters);
-
-        Instance instance = instanceList.stream().filter(e -> e.isEnabled() && e.isHealthy()
-                && e.getMetadata().containsKey(ChronusConstants.IS_MASTER)
-                && ChronusConstants.Y.equals(e.getMetadata().get(ChronusConstants.IS_MASTER))).findFirst().orElse(null);
-        return instance != null ? InstanceUtils.getAddressByInstance(instance) : null;
-    }
-
-
-    @Override
-    public List<Node> getAllExecutorNode() throws Exception {
+    public List<Node> getAllWorkerNode() throws Exception {
         List<String> clusters = new ArrayList<>(1);
         clusters.add(currentNode.getCluster());
         List<Instance> instanceList = nacosNamingService.getAllInstances(ChronusConstants.NODE_NAME_CHRONUS, clusters);
         if (CollectionUtils.isEmpty(instanceList)) {
-            return null;
+            return new ArrayList<>();
         }
-        instanceList = instanceList.stream().filter(e -> e.isHealthy() && ChronusConstants.Y.equals(e.getMetadata().get(ChronusConstants.ENABLE_EXECUTOR))).collect(Collectors.toList());
+
+        instanceList = instanceList.stream().filter(e -> e.isHealthy() && ChronusConstants.Y.equals(e.getMetadata().get(ChronusConstants.ENABLE_WORKER))).collect(Collectors.toList());
         List<Node> result = new ArrayList<>();
         for (Instance instance : instanceList) {
             result.add(convertNode(instance));
@@ -136,26 +96,55 @@ public class NamingServiceNacosImpl implements NamingService {
         return result;
     }
 
+    /**
+     * 获取指定集群的所有节点
+     * @param cluster
+     * @return
+     * @throws Exception
+     */
     @Override
     public List<Node> getAllNode(String cluster) throws Exception {
         List<String> clusters = new ArrayList<>(1);
-        clusters.add(cluster);
-        List<Instance> instanceList = nacosNamingService.getAllInstances(ChronusConstants.NODE_NAME_CHRONUS);
+        clusters.add(currentNode.getCluster());
+        List<Instance> instanceList = nacosNamingService.getAllInstances(ChronusConstants.NODE_NAME_CHRONUS, clusters);
         if (CollectionUtils.isEmpty(instanceList)) {
-            return null;
+            return new ArrayList<>();
         }
+
         List<Node> result = new ArrayList<>();
         for (Instance instance : instanceList) {
             result.add(convertNode(instance));
         }
         return result;
     }
+
+
+    /**
+     * 获取所有集群的所有节点
+     *
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public List<Node> getAllNode() throws Exception {
+        List<Instance> instanceList = nacosNamingService.getAllInstances(ChronusConstants.NODE_NAME_CHRONUS);
+        if (CollectionUtils.isEmpty(instanceList)) {
+            return new ArrayList<>();
+        }
+        List<Node> result = new ArrayList<>();
+        for (Instance instance : instanceList) {
+            Node node = convertNode(instance);
+            result.add(node);
+        }
+        return result;
+    }
+
 
     private Node convertNode(Instance instance) {
         Node node = new Node();
         node.setHostName(instance.getMetadata().get(ChronusConstants.HOST_NAME));
         node.setCluster(instance.getMetadata().get(ChronusConstants.CLUSTER));
-        node.setEnableExecutor(instance.getMetadata().get(ChronusConstants.ENABLE_EXECUTOR));
+        node.setEnableWorker(instance.getMetadata().get(ChronusConstants.ENABLE_WORKER));
         node.setEnableMaster(instance.getMetadata().get(ChronusConstants.ENABLE_MASTER));
         node.setIsMaster(instance.getMetadata().get(ChronusConstants.IS_MASTER));
         node.setVersion(instance.getMetadata().get(ChronusConstants.REGISTER_TIME));
@@ -168,21 +157,6 @@ public class NamingServiceNacosImpl implements NamingService {
             node.setState(instance.isHealthy() ? NodeStateEnum.NORMAL.getState() : NodeStateEnum.DEAD.getState());
         }
         return node;
-    }
-
-    @Override
-    public void setTag(Node node) throws Exception {
-        List<String> clusters = new ArrayList<>(1);
-        clusters.add(node.getCluster());
-        List<Instance> instanceList = nacosNamingService.getAllInstances(ChronusConstants.NODE_NAME_CHRONUS, clusters);
-        if (CollectionUtils.isEmpty(instanceList)) {
-            return;
-        }
-        Instance instance = instanceList.stream().filter(e -> InstanceUtils.getAddressByInstance(e).equals(node.getAddress())).findFirst().orElse(null);
-        if (instance != null) {
-            instance.getMetadata().put(ChronusConstants.TAG, node.getTag());
-            namingMaintainService.updateInstance(ChronusConstants.NODE_NAME_CHRONUS, instance);
-        }
     }
 
     @Override

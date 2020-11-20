@@ -6,7 +6,7 @@ package com.qihoo.finance.chronus.registry.util;
 public class ZookeeperUtil {
 
     public static String getFullRootPath(String zkRootPath, String cluster) {
-        return String.join("/", zkRootPath, "node", cluster);
+        return String.join("/", zkRootPath, cluster, "node");
     }
 
     public static String getFullNodePath(String fullRootPath, String address, String version) {

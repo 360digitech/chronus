@@ -14,8 +14,9 @@
 
     <modules>
         <module>chronus-registry-api</module>
-        <module>chronus-registry-nacos</module>
+<!--        <module>chronus-registry-nacos</module>-->
         <module>chronus-registry-zookeeper</module>
+        <module>chronus-registry-local</module>
     </modules>
 
 

@@ -7,20 +7,18 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
   state: {
     status: '',
-    cluster: localStorage.getItem('cluster') || 'default',
     userName: localStorage.getItem('userName') || ''
   },
   mutations: {
-    cluster_change (state, cluster) {
-      state.cluster = cluster
-    },
     auth_request (state) {
       state.status = 'loading'
     },
-    auth_success (state, user) {
+    auth_success (state) {
       state.status = 'success'
-
-      state.userName = user.name
+    },
+    auth_user (state, userName) {
+      state.status = 'success'
+      state.userName = userName
     },
     auth_error (state) {
       state.status = 'error'
@@ -35,6 +33,7 @@ const store = new Vuex.Store({
       return new Promise((resolve, reject) => {
         commit('auth_request')
         // 向后端发送请求，验证用户名密码是否正确，请求成功接收后端返回的token值，利用commit修改store的state属性，并将token存放在localStorage中
+        console.log(user)
         axios.post('/api/login', user)
           .then(resp => {
             if (resp.data.flag === 'S') {
@@ -42,11 +41,8 @@ const store = new Vuex.Store({
             } else {
               reject(resp.data.msg)
             }
-            localStorage.setItem('userName', user.name)
-            // 每次请求接口时，需要在headers添加对应的Token验证
-            // axios.defaults.headers.common['Authorization'] = token
-            // 更新token
-            commit('auth_success', user)
+            localStorage.setItem('userName', resp.data.data)
+            commit('auth_user', resp.data.data.name)
           })
           .catch(err => {
             commit('auth_error')
@@ -61,17 +57,11 @@ const store = new Vuex.Store({
         commit('logout')
         resolve()
       })
-    },
-    ClusterChange ({ commit }, cluster) {
-      return new Promise(resolve => {
-        localStorage.removeItem('cluster')
-        commit('cluster_change', cluster)
-      })
     }
   },
   getters: {
     // !!将state.token强制转换为布尔值，若state.token存在且不为空(已登录)则返回true，反之返回false
-    isLoggedIn: state => !!state.userName,
+    isLoggedIn: state => !!state.token,
     authStatus: state => state.status
   }
 })

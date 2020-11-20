@@ -12,7 +12,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>chronus-storage-mongodb-plugin</module>
-        <!--<module>chronus-storage-h2-plugin</module>-->
+<!--        <module>chronus-storage-h2-plugin</module>-->
     </modules>
 
     <dependencies>

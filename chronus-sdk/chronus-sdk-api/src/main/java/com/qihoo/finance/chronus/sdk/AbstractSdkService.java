@@ -1,22 +1,17 @@
 package com.qihoo.finance.chronus.sdk;
 
 import com.qihoo.finance.chronus.sdk.annotation.Job;
-import com.qihoo.finance.chronus.sdk.domain.JobConfig;
-import com.qihoo.finance.chronus.sdk.domain.TaskItemDefineDomain;
+import com.qihoo.finance.chronus.sdk.annotation.JobMethod;
+import com.qihoo.finance.chronus.sdk.domain.JobData;
 import com.qihoo.finance.chronus.sdk.enums.ChronusSdkErrorCodeEnum;
-import com.qihoo.finance.chronus.sdk.service.ChronusSdkBatchJob;
-import com.qihoo.finance.chronus.sdk.service.ChronusSdkSelectTaskService;
+import com.qihoo.finance.chronus.sdk.service.ChronusSdkExecuteFlowService;
 import com.qihoo.finance.chronus.sdk.service.ChronusSdkSimpleJob;
-import com.qihoo.finance.chronus.sdk.service.ChronusSdkSingleJob;
 import lombok.extern.slf4j.Slf4j;
-import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import javax.annotation.PostConstruct;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -25,119 +20,96 @@ import java.util.*;
  * Created by xiongpu on 2019/8/29.
  */
 @Slf4j
-public abstract class AbstractSdkService<T> implements ChronusSdkProcessor<T>, ApplicationContextAware {
+public abstract class AbstractSdkService<T> implements ChronusSdkFacade<T>, ApplicationContextAware {
     private static final Map<String, Method> jobAnnotationMap = new HashMap<>();
     private static ApplicationContext applicationContext = null;
 
-    private String version;
-
     @Autowired(required = false)
-    protected Map<String, ChronusSdkSelectTaskService> dataFlowServiceMap;
+    protected Map<String, ChronusSdkExecuteFlowService> dataFlowServiceMap;
 
     @Autowired(required = false)
     protected Map<String, ChronusSdkSimpleJob> simpleServiceMap;
 
     @Override
-    public String getVersion() {
-        if (version != null) {
-            return version;
-        }
+    public List<T> selectTasks(JobData jobData) throws Exception {
+        ChronusSdkExecuteFlowService clientService = dataFlowServiceMap.get(jobData.getBeanName());
+        checkJobConfig(jobData, clientService);
         try {
-            Properties properties = new Properties();
-            properties.load(this.getClass().getResourceAsStream("/META-INF/maven/com.qihoo.finance.chronus/chronus-sdk-api/pom.properties"));
-            this.version = properties.getProperty("version");
-        } catch (Exception e) {
-            log.error("获取客户端版本号异常!", e);
-        }
-        return this.version;
-    }
-
-    @Override
-    public boolean execute(JobConfig jobConfig, T item) {
-        try {
-            ChronusSdkSingleJob clientService = (ChronusSdkSingleJob) dataFlowServiceMap.get(jobConfig.getBeanName());
-            return clientService.execute(item, jobConfig.getTaskParameter());
-        } catch (Throwable e) {
-            log.error("Bean:{} ,taskParameter:{} ,item:{} execute error", jobConfig.getBeanName(), jobConfig.getTaskParameter(), item, e);
-        }
-        return false;
-    }
-
-    @Override
-    public boolean execute(JobConfig jobConfig, List<TaskItemDefineDomain> taskItemList, int eachFetchDataNum) {
-        ChronusSdkSimpleJob sdkSimpleService = simpleServiceMap.get(jobConfig.getBeanName());
-        try {
-            if (sdkSimpleService != null) {
-                return sdkSimpleService.execute(jobConfig.getTaskParameter(), taskItemList, eachFetchDataNum);
-            } else {
-                Method method = jobAnnotationMap.get(jobConfig.getBeanName());
-                return invoke(jobConfig.getBeanName(), method, jobConfig.getTaskParameter(), taskItemList, eachFetchDataNum);
-            }
-        } catch (Throwable e) {
-            log.error("Bean:{} ,taskParameter:{} ,taskItemList:{} execute error", jobConfig.getBeanName(), jobConfig.getTaskParameter(), taskItemList, e);
-        }
-        return false;
-    }
-
-    @Override
-    public boolean executeBatch(JobConfig jobConfig, T[] itemArr) {
-        try {
-            ChronusSdkBatchJob clientService = (ChronusSdkBatchJob) dataFlowServiceMap.get(jobConfig.getBeanName());
-            return clientService.execute(itemArr, jobConfig.getTaskParameter());
-        } catch (Throwable e) {
-            log.error("Bean:{} ,taskParameter:{} ,item:{} execute error", jobConfig.getBeanName(), jobConfig.getTaskParameter(), itemArr, e);
-        }
-        return false;
-    }
-
-    @Override
-    public List<T> selectTasks(JobConfig jobConfig, List<TaskItemDefineDomain> taskItemList, int eachFetchDataNum) throws Exception {
-        ChronusSdkSelectTaskService clientService = dataFlowServiceMap.get(jobConfig.getBeanName());
-        checkJobConfig(jobConfig, clientService);
-        try {
-            List<T> data = clientService.selectTasks(jobConfig.getTaskParameter(), taskItemList, eachFetchDataNum);
+            List<T> data = clientService.selectTasks(jobData);
             return data;
         } catch (Throwable e) {
-            log.error("Bean:{} ,taskParameter:{} selectTasks error", jobConfig.getBeanName(), jobConfig.getTaskParameter(), e);
+            log.error("jobData:{} selectTasks error", jobData, e);
             throw e;
         }
     }
 
-    private void checkJobConfig(JobConfig jobConfig, ChronusSdkSelectTaskService clientService) {
-        if (clientService == null) {
-            throw new RuntimeException(" [" + jobConfig.getSysCode() + " : " + jobConfig.getBeanName() + "] [" + ChronusSdkErrorCodeEnum.HANDLE_BEAN_NOT_EXIST.getCode() + "]" + ChronusSdkErrorCodeEnum.HANDLE_BEAN_NOT_EXIST.getMsg());
+    @Override
+    public boolean execute(JobData jobData, List<T> itemList) throws Exception{
+        try {
+            ChronusSdkExecuteFlowService clientService = dataFlowServiceMap.get(jobData.getBeanName());
+            return clientService.execute(jobData, itemList);
+        } catch (Throwable e) {
+            log.error("jobData:{} ,itemList:{} execute error", jobData, itemList, e);
         }
+        return false;
     }
 
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        AbstractSdkService.applicationContext = applicationContext;
+    public boolean execute(JobData jobData) {
+        ChronusSdkSimpleJob sdkSimpleService = simpleServiceMap.get(jobData.getBeanName());
+        try {
+            if (sdkSimpleService != null) {
+                return sdkSimpleService.execute(jobData);
+            } else {
+                Method method = jobAnnotationMap.get(jobData.getBeanName());
+                return invoke(jobData.getBeanName(), method, jobData);
+            }
+        } catch (Throwable e) {
+            log.error("jobData:{} ,execute error", jobData, e);
+        }
+        return false;
     }
 
 
-    @PostConstruct
-    public void scanner() {
+    private void checkJobConfig(JobData jobData, ChronusSdkExecuteFlowService clientService) {
+        if (clientService == null) {
+            throw new RuntimeException(" [" + jobData.getServiceName() + " : " + jobData.getBeanName() + "] [" + ChronusSdkErrorCodeEnum.HANDLE_BEAN_NOT_EXIST.getCode() + "]" + ChronusSdkErrorCodeEnum.HANDLE_BEAN_NOT_EXIST.getMsg());
+        }
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        AbstractSdkService.applicationContext = applicationContext;
         try {
-            Reflections reflections = new Reflections(new MethodAnnotationsScanner());
-            Set<Method> resources = reflections.getMethodsAnnotatedWith(Job.class);
-            if (resources == null || resources.size() < 1) {
+            Map<String, Object> jobBeans = applicationContext.getBeansWithAnnotation(Job.class);
+            Set<Method> methodSet = new HashSet<>();
+            for (Map.Entry<String, Object> entry : jobBeans.entrySet()) {
+                Object bean = entry.getValue();
+                Method[] methods = bean.getClass().getMethods();
+                for (Method method : methods) {
+                    if (method.isAnnotationPresent(JobMethod.class)) {
+                        methodSet.add(method);
+                    }
+                }
+            }
+            if (methodSet.size() == 0) {
                 return;
             }
-            for (Method method : resources) {
-                Job annotation = method.getAnnotation(Job.class);
+            for (Method method : methodSet) {
+                JobMethod annotation = method.getAnnotation(JobMethod.class);
                 if (annotation == null) {
                     continue;
                 }
                 if ("".equals(annotation.key().trim()) || !annotation.key().contains(".") || annotation.key().split("\\.").length != 2) {
-                    throw new IllegalArgumentException("method:" + method.getName() + " @Job.key error:" + annotation.key() + " need 'beanId.methodName'");
+                    throw new IllegalArgumentException("method:" + method.getName() + " @JobMethod.key error:" + annotation.key() + " need 'beanId.methodName'");
                 }
                 String key = annotation.key();
                 String beanName = key.split("\\.")[0];
                 // bean 是否存在
                 applicationContext.getBean(beanName);
-                if(jobAnnotationMap.containsKey(key)){
-                    throw new IllegalArgumentException("method:" + method.getName() + " @Job.key error:" + annotation.key() + " Duplicate key");
+                if (jobAnnotationMap.containsKey(key)) {
+                    throw new IllegalArgumentException("method:" + method.getName() + " @JobMethod.key error:" + annotation.key() + " Duplicate key");
                 }
                 jobAnnotationMap.put(key, method);
             }
@@ -146,24 +118,11 @@ public abstract class AbstractSdkService<T> implements ChronusSdkProcessor<T>, A
         }
     }
 
-
-    private boolean invoke(String key, Method method, String taskParameter, List<TaskItemDefineDomain> taskItemList, int eachFetchDataNum) throws InvocationTargetException, IllegalAccessException {
+    private boolean invoke(String key, Method method, JobData jobData) throws InvocationTargetException, IllegalAccessException {
         String beanName = key.split("\\.")[0];
         Object bean = applicationContext.getBean(beanName);
-        Class[] paramTypes = method.getParameterTypes();
-
-        Object[] args = new Object[paramTypes.length];
-        for (int i = 0; i < paramTypes.length; i++) {
-            Object arg = null;
-            if (paramTypes[i].isAssignableFrom(String.class)) {
-                arg = taskParameter;
-            } else if (paramTypes[i].isAssignableFrom(List.class)) {
-                arg = taskItemList;
-            } else if (paramTypes[i].isAssignableFrom(int.class) || paramTypes[i].isAssignableFrom(Integer.class)) {
-                arg = eachFetchDataNum;
-            }
-            args[i] = arg;
-        }
+        Object[] args = new Object[1];
+        args[0] = jobData;
         return (boolean) method.invoke(bean, args);
     }
 }

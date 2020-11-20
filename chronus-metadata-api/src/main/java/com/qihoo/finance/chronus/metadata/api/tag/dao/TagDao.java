@@ -5,7 +5,6 @@ import com.qihoo.finance.chronus.metadata.api.tag.entity.TagEntity;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by xiongpu on 2019/9/13.
@@ -17,8 +16,6 @@ public interface TagDao {
     TagEntity selectByTagName(String tag);
 
     List<TagEntity> selectListAll();
-
-    List<TagEntity> selectListByNames(Set<String> allTagNames);
 
     void delete(String tagName);
 
