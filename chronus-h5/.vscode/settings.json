@@ -1,0 +1,33 @@
+{
+  "vetur.format.defaultFormatter.html": "js-beautify-html",
+  "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+  },
+  "vetur.format.defaultFormatterOptions": {
+      "js-beautify-html": {
+          "wrap_attributes": "auto"
+      },
+      "prettyhtml": {
+          "printWidth": 100,
+          "singleQuote": false,
+          "wrapAttributes": false,
+          "sortAttributes": false
+      }
+},
+  
+  // 去掉代码结尾的分号 
+  "prettier.semi": false,
+  // 使用单引号替代双引号 
+  "prettier.singleQuote": true,
+  "prettier.eslintIntegration": true,
+  "html.autoClosingTags": false,
+  "javascript.autoClosingTags": false,
+  "typescript.autoClosingTags": false,
+  "[javascript]": {
+      "editor.defaultFormatter": "HookyQR.beautify"
+  },
+  "[json]": {
+      "editor.defaultFormatter": "HookyQR.beautify"
+  },
+  "explorer.confirmDragAndDrop": false,
+}
