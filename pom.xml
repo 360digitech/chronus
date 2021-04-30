@@ -27,7 +27,7 @@
     <properties>
         <spring-boot.version>2.1.11.RELEASE</spring-boot.version>
         <dubbo.version>2.7.4.1</dubbo.version>
-        <spring.version>5.1.17.RELEASE</spring.version>
+        <spring.version>5.1.18.RELEASE</spring.version>
         <mybatis-spring-boot-starter.version>2.0.1</mybatis-spring-boot-starter.version>
         <pagehelper-spring-boot-starter.version>1.2.12</pagehelper-spring-boot-starter.version>
         <mapper-spring-boot-starter.version>2.1.5</mapper-spring-boot-starter.version>
