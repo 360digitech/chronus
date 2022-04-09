@@ -21,7 +21,7 @@
     "js-cookie": "^2.2.0",
     "js-file-download": "^0.4.1",
     "mockjs": "^1.0.1-beta3",
-    "moment": "^2.22.2",
+    "moment": "^2.29.2",
     "node-uuid": "^1.4.8",
     "uuid": "^3.3.2",
     "vue": "^2.5.17",
