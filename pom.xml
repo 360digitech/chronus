@@ -52,7 +52,7 @@
         <lettuce.version>5.1.6.RELEASE</lettuce.version>
         <jackson-annotations.version>2.9.9</jackson-annotations.version>
         <mongodb-driver.version>3.8.2</mongodb-driver.version>
-        <spring-data-commons.version>2.1.10.RELEASE</spring-data-commons.version>
+        <spring-data-commons.version>3.3.5</spring-data-commons.version>
         <shiro-spring.version>1.4.2</shiro-spring.version>
         <curator.version>4.2.0</curator.version>
         <quartz.version>2.3.2</quartz.version>
